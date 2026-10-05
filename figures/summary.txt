@@ -1,0 +1,13 @@
+ILLUSTRATIVE parameters -- see runaway/params.py
+
+design       normal peak  cells  propagation times [s]      max |energy residual|
+none             37.8 C    5/5     2.3    14.1    28.2    42.2    56.1   4.0e-13 (relative)
+conductor        38.0 C    5/5     2.3    15.9    31.8    47.8    63.6   5.0e-12 (relative)
+insulator        64.5 C    1/5     2.3     -       -       -       -     2.3e-13 (relative)
+switchable       38.0 C    1/5     2.3     -       -       -       -     7.8e-13 (relative)
+
+design map: 361 runs, contained in 124; outcomes seen: [1, 5]
+containment boundary at hot-state conductance k_off/L ~ 32 W/m^2K (end cooling h = 100 W/m^2K)
+T_sw window that both cools and protects: 38 - 175 C
+
+figures written to figures/ in 36 s
