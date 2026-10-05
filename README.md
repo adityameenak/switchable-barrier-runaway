@@ -1,5 +1,7 @@
 # runaway: thermal runaway propagation with switchable thermal barriers
 
+[![tests](https://github.com/adityameenak/switchable-barrier-runaway/actions/workflows/tests.yml/badge.svg)](https://github.com/adityameenak/switchable-barrier-runaway/actions/workflows/tests.yml)
+
 A small, tested 1D finite-volume model of **thermal runaway propagating through a
 stack of lithium-ion cells**. It compares four inter-cell barrier designs,
 including a **temperature-switchable barrier** that conducts heat in normal
@@ -12,6 +14,9 @@ operation and insulates once it gets hot.
 > where a literature-sourced or measured value belongs. The *qualitative*
 > conclusions are the point; the specific temperatures and times are not
 > predictions for any real cell.
+
+**[Interactive results explorer](https://adityameenak.github.io/switchable-barrier-runaway/)**
+· **[Technical report](paper/)** · run it yourself with `python -m runaway.demo`
 
 ![Tradeoff](figures/c_tradeoff.png)
 
@@ -165,11 +170,10 @@ Each is documented in the code.
 The kinetic parameters describe onset (150–250 °C). Extrapolated to a burning
 cell at ~900 °C, pure Arrhenius gives $k \sim 10^9$ s⁻¹. That implies a reaction
 front inside the cell only ~10⁻⁷ m thick. On any practical mesh the front is
-unresolved, and each control volume ignites its neighbour after a delay that
-scales with $\Delta x$. The convergence study exposed this: without the ceiling,
-the cell-2 propagation time for the conductor case **halved with every mesh
-refinement**, at about 13, 7.6, 4.7 and 3.3 s for 10, 20, 40 and 80 volumes per
-cell.
+unresolved, so the front speed is set by the mesh rather than by the physics.
+The convergence study exposed this: without the ceiling, the cell-2 propagation
+time for the conductor case **does not converge**. It drifts from 14.3 to 10.9,
+11.1 and 8.8 s for 10, 20, 40 and 80 volumes per cell, with no sign of settling.
 
 Real high-temperature decomposition is limited by transport and multi-step
 chemistry, not by an ever-faster single Arrhenius step. A smooth ceiling of
@@ -309,6 +313,7 @@ pip install -r requirements.txt
 pytest                         # 18 validation tests, ~5 s
 python -m runaway.demo         # regenerate figures/ (~40 s)
 python -m runaway.demo --quick # coarse sweeps, ~10 s
+python -m runaway.explorer     # rebuild the interactive page in docs/ (~40 s)
 ```
 
 Use the package directly:
@@ -333,8 +338,11 @@ runaway/
   solver.py     conduction + reaction time stepping, steady state, energy check
   scenarios.py  design comparison, design-map and T_sw sweeps
   demo.py       CLI: python -m runaway.demo -> figures/
+  explorer.py   CLI: python -m runaway.explorer -> docs/index.html
 tests/          pytest validation suite
 figures/        generated figures + summary.txt
+docs/           interactive explorer (served by GitHub Pages)
+paper/          technical report (LaTeX) + convergence figure script
 ```
 
 ## Next steps
