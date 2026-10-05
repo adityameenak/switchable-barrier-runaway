@@ -1,7 +1,8 @@
 # Technical report
 
 `paper.tex` is a short technical report on the model and results (not peer
-reviewed). Every number in it comes from `python -m runaway.demo` and
+reviewed); `explainer.tex` is a plain-English companion guide. Compiled copies:
+[paper.pdf](paper.pdf) and [explainer.pdf](explainer.pdf). Every number in it comes from `python -m runaway.demo` and
 `python paper/make_figures.py`.
 
 ## Build the PDF
@@ -10,7 +11,7 @@ reviewed). Every number in it comes from `python -m runaway.demo` and
 `fig_convergence.png` and the five PNGs from `../figures/` (the `\graphicspath`
 also searches the project root), then compile with pdfLaTeX.
 
-**Locally** with any TeX distribution:
+**Locally** with MacTeX / TeX Live (e.g. VS Code + LaTeX Workshop, or the command line):
 
 ```bash
 cd paper

@@ -12,3 +12,16 @@ venv/
 .vscode/
 .claude/
 *.zip
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.bcf
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*-blx.bib

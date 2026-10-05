@@ -14,10 +14,7 @@
 \usepackage{enumitem}
 \usepackage[font=small,labelfont=bf,skip=6pt]{caption}
 \usepackage{xcolor}
-\usepackage[style=numeric-comp,sorting=none,maxbibnames=6,minbibnames=3,
-            giveninits=true,doi=true,url=false,isbn=false,eprint=false,
-            backend=biber]{biblatex}
-\addbibresource{refs.bib}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{xurl}                 % lets long URLs break cleanly
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,
             urlcolor=blue!50!black]{hyperref}
@@ -46,8 +43,8 @@
 \newcommand{\Tsw}{T_\mathrm{sw}}
 \newcommand{\kmax}{k_\mathrm{max}}
 
-\title{Temperature-switchable thermal barriers against thermal runaway propagation:\\
-a one-dimensional finite-volume study}
+\title{Temperature-switchable thermal barriers against\\ thermal runaway propagation\\[6pt]
+\large A one-dimensional finite-volume study}
 \author{Aditya Meenakshisundaram\\[4pt]
 \small\texttt{github.com/adityameenak/switchable-barrier-runaway}}
 \date{October 2026}
@@ -426,21 +423,11 @@ margin.
 
 \begin{figure}[!htbp]
   \centering
-  \begin{minipage}[t]{0.485\linewidth}
-    \centering
-    \includegraphics[width=\linewidth,height=6.2cm,keepaspectratio]{d_design_map.png}
-    \caption{Cells in runaway over barrier thickness and hot-state conductivity
-    ($\kon = 5$\,W\,m$^{-1}$K$^{-1}$, $\Tsw = 120\,^\circ$C). The dotted line is
-    constant $\koff/L$; the star marks the default design.}
-    \label{fig:map}
-  \end{minipage}\hfill
-  \begin{minipage}[t]{0.485\linewidth}
-    \centering
-    \includegraphics[width=\linewidth,height=6.2cm,keepaspectratio]{e_switch_temperature.png}
-    \caption{Normal-operation peak (top) and cells in runaway (bottom) as functions of
-    the switch temperature. The shaded window both cools and protects.}
-    \label{fig:tsw}
-  \end{minipage}
+  \includegraphics[width=0.72\linewidth]{d_design_map.png}
+  \caption{Cells in runaway over barrier thickness and hot-state conductivity
+  ($\kon = 5$\,W\,m$^{-1}$K$^{-1}$, $\Tsw = 120\,^\circ$C). The dotted line is constant
+  $\koff/L$; the star marks the default design.}
+  \label{fig:map}
 \end{figure}
 
 \subsection{Choosing the switch temperature}
@@ -451,6 +438,14 @@ toward the insulator's. Above about 175\,$^\circ$C the barrier switches only aft
 face of cell~2 has passed self-heating onset, and runaway propagates. Between these
 limits the switch both cools and protects. The lower edge is set by the operating
 temperature plus a few switch widths; the upper edge is set by the kinetics.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.72\linewidth]{e_switch_temperature.png}
+  \caption{Normal-operation peak (top) and cells in runaway (bottom) as functions of the
+  switch temperature. The shaded window both cools and protects.}
+  \label{fig:tsw}
+\end{figure}
 
 % =====================================================================
 \section{Discussion and limitations}
@@ -505,6 +500,7 @@ The simulation code and manuscript were developed with assistance from an AI mod
 (Claude, Anthropic). The author reviewed the code, verified the results and takes full
 responsibility for the content.
 
-\printbibliography
+\bibliographystyle{unsrtnat}
+\bibliography{refs}
 
 \end{document}
