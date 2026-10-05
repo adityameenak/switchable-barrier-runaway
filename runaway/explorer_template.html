@@ -1,0 +1,735 @@
+<title>Switchable Barrier Explorer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive results from a 1D finite-volume model of thermal runaway propagation through a Li-ion cell stack with conductive, insulating and temperature-switchable barriers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #121618;
+  --ink-2: #4f595f;
+  --ink-3: #7a858b;
+  --line: #dde2e0;
+  --line-2: #c5ccc9;
+  --accent: #4a3aa7;
+  --accent-soft: #e9e6f7;
+  --ok: #1b7a57;
+  --ok-soft: #dff1e8;
+  --hot: #c4501f;
+  --hot-soft: #fbe3d6;
+  --d-none: #2a78d6;
+  --d-conductor: #eb6834;
+  --d-insulator: #1baf7a;
+  --d-switchable: #4a3aa7;
+  --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4;
+  --band: rgba(18, 22, 24, 0.06);
+  --window: rgba(27, 175, 122, 0.12);
+  --shadow: 0 1px 2px rgba(18, 22, 24, 0.06), 0 4px 16px rgba(18, 22, 24, 0.05);
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f1214; --surface: #171b1e; --ink: #eef1f0; --ink-2: #b4bcc0; --ink-3: #848e94;
+    --line: #262c30; --line-2: #374045; --accent: #9085e9; --accent-soft: #242046;
+    --ok: #4fc99a; --ok-soft: #133328; --hot: #f08a5d; --hot-soft: #3a2015;
+    --d-none: #3987e5; --d-conductor: #d95926; --d-insulator: #199e70; --d-switchable: #9085e9;
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181;
+    --band: rgba(238, 241, 240, 0.06); --window: rgba(79, 201, 154, 0.12);
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1214; --surface: #171b1e; --ink: #eef1f0; --ink-2: #b4bcc0; --ink-3: #848e94;
+  --line: #262c30; --line-2: #374045; --accent: #9085e9; --accent-soft: #242046;
+  --ok: #4fc99a; --ok-soft: #133328; --hot: #f08a5d; --hot-soft: #3a2015;
+  --d-none: #3987e5; --d-conductor: #d95926; --d-insulator: #199e70; --d-switchable: #9085e9;
+  --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181;
+  --band: rgba(238, 241, 240, 0.06); --window: rgba(79, 201, 154, 0.12);
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.25);
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  margin: 0; color: var(--ink); font: 15px/1.55 var(--f-body);
+  padding-inline: 20px; padding-block: 0 64px;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(32px, 6vw, 54px); line-height: 1.02; font-weight: 800; font-stretch: 85%; }
+h2 { font-size: clamp(22px, 3.2vw, 28px); line-height: 1.15; font-weight: 700; font-stretch: 90%; }
+h3 { font-size: 15px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font: 500 12px/1.3 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.muted { color: var(--ink-2); }
+.small { font-size: 13px; }
+
+header.top { padding-top: 48px; display: grid; gap: 18px; }
+header.top .lead { font-size: 18px; color: var(--ink-2); max-width: 62ch; }
+.links { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 14px; }
+.badge-illus { display: inline-flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-2);
+  border-left: 3px solid var(--line-2); padding: 2px 0 2px 10px; max-width: 70ch; }
+
+section { display: grid; gap: 18px; }
+section > header { display: grid; gap: 8px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; box-shadow: var(--shadow); min-width: 0; }
+
+/* Scoreboard */
+.score { display: grid; gap: 0; }
+.score-row { display: grid; grid-template-columns: minmax(150px, 1.2fr) minmax(160px, 2fr) minmax(150px, 1.3fr); gap: 18px; align-items: center; padding: 14px 0; border-top: 1px solid var(--line); }
+.score-row.head { border-top: 0; padding-top: 0; }
+.score-row.head > div { font: 500 11px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.dname { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.dname small { display: block; font-weight: 400; color: var(--ink-3); font-size: 12px; font-family: var(--f-mono); }
+.bar-track { position: relative; height: 22px; display: flex; align-items: center; gap: 10px; }
+.bar { height: 10px; border-radius: 0 4px 4px 0; }
+.dots { display: flex; gap: 5px; align-items: center; }
+.dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line-2); }
+.dot.on { background: var(--hot); border-color: var(--hot); }
+.dot.trig { background: var(--ink-3); border-color: var(--ink-3); }
+.verdict { font-size: 12px; font-family: var(--f-mono); padding: 2px 8px; border-radius: 99px; margin-left: 8px; white-space: nowrap; }
+.verdict.ok { background: var(--ok-soft); color: var(--ok); }
+.verdict.bad { background: var(--hot-soft); color: var(--hot); }
+@media (max-width: 640px) {
+  .score-row { grid-template-columns: 1fr 1fr; }
+  .score-row > :first-child { grid-column: 1 / -1; }
+  .score-row.head > :first-child { display: none; }
+}
+
+/* Player */
+.player { display: grid; gap: 18px; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.btn { font: 600 13px var(--f-body); border: 1px solid var(--line-2); background: var(--surface); color: var(--ink);
+  border-radius: 8px; padding: 7px 14px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.slider-wrap { flex: 1 1 260px; display: grid; gap: 2px; min-width: 0; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.tread { font: 500 22px var(--f-mono); font-variant-numeric: tabular-nums; min-width: 9ch; }
+.tread small { font-size: 12px; color: var(--ink-3); margin-left: 4px; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12px var(--f-mono); padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line-2); background: transparent; color: var(--ink-2); cursor: pointer; }
+.chip:hover { color: var(--ink); border-color: var(--ink-3); }
+.strips { display: grid; gap: 14px; }
+.strip { display: grid; grid-template-columns: 150px 1fr 92px; gap: 14px; align-items: center; }
+.strip .lbl { font-weight: 600; font-size: 14px; display: flex; gap: 8px; align-items: center; }
+.strip svg { width: 100%; height: 52px; display: block; overflow: visible; }
+.strip .stat { font: 500 13px var(--f-mono); text-align: right; color: var(--ink-2); }
+.strip .stat b { color: var(--ink); font-weight: 500; }
+@media (max-width: 640px) {
+  .strip { grid-template-columns: 1fr auto; }
+  .strip svg { grid-column: 1 / -1; grid-row: 2; }
+}
+.cbar { display: grid; grid-template-columns: 150px 1fr 92px; gap: 14px; align-items: center; }
+.cbar .ramp { height: 8px; border-radius: 4px; }
+.cbar .ticks { display: flex; justify-content: space-between; font: 11px var(--f-mono); color: var(--ink-3); margin-top: 4px; }
+@media (max-width: 640px) { .cbar { grid-template-columns: 1fr; } .cbar > .sp { display: none; } }
+
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: 500 13px var(--f-body); border: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; cursor: pointer; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart-title { font: 600 13px var(--f-body); margin-bottom: 6px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.chart-title span { color: var(--ink-3); font-weight: 400; font-family: var(--f-mono); font-size: 12px; }
+svg text { font-family: var(--f-mono); font-size: 11px; fill: var(--ink-3); }
+svg .axis line, svg .axis path { stroke: var(--line-2); }
+svg .grid line { stroke: var(--line); }
+svg .lbl-strong { fill: var(--ink); font-family: var(--f-body); font-size: 12px; font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); margin-top: 8px; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px;
+  padding: 8px 10px; font: 12px/1.45 var(--f-mono); color: var(--ink); box-shadow: var(--shadow); white-space: nowrap; z-index: 5; display: none; }
+.tip .k { color: var(--ink-3); }
+
+.callouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.callout { display: grid; gap: 4px; }
+.callout .big { font: 600 26px var(--f-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.callout p { font-size: 13.5px; color: var(--ink-2); }
+
+.eq { font-family: var(--f-mono); font-size: 13px; background: var(--band); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; color: var(--ink); }
+.tests { display: grid; gap: 0; }
+.tests div { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.tests div:first-child { border-top: 0; }
+.tests .ck { color: var(--ok); font-weight: 700; }
+ul.lim { margin: 0; padding-left: 18px; display: grid; gap: 6px; max-width: 70ch; }
+footer { color: var(--ink-3); font-size: 13px; border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 6px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Li-ion cell stack · 1D finite-volume model</div>
+    <h1>Switchable thermal barriers: cool in use, a firewall in runaway</h1>
+    <p class="lead">A barrier between battery cells has two jobs that pull in opposite directions. Conducting heat keeps cells cool in normal use but passes a runaway cell's heat to its neighbours. Insulating stops propagation but traps heat every day. A barrier that conducts below a switch temperature and insulates above it does both. This page shows the simulation results behind that claim.</p>
+    <div class="links">
+      <a href="https://github.com/adityameenak/switchable-barrier-runaway">Code on GitHub</a>
+      <a href="https://github.com/adityameenak/switchable-barrier-runaway/blob/main/paper/paper.pdf">Technical report (PDF)</a>
+      <a href="#method">Method and validation</a>
+    </div>
+    <div class="badge-illus"><span><b>Illustrative parameters.</b> Every material and kinetic value is an order-of-magnitude placeholder, not fitted to a specific cell or barrier. The trends are the result; the exact temperatures and times are not predictions.</span></div>
+  </header>
+
+  <section id="scoreboard">
+    <header>
+      <div class="eyebrow">The tradeoff</div>
+      <h2>Four barrier designs, two tests</h2>
+      <p class="muted">Normal use: uniform heat generation of <span class="num" data-p="q_normal"></span> in every cell, solved to steady state. Abuse: cell 1 starts at <span class="num" data-p="T_trigger"></span> and the model tracks whether runaway spreads.</p>
+    </header>
+    <div class="panel score" id="score"></div>
+  </section>
+
+  <section id="propagate">
+    <header>
+      <div class="eyebrow">Abuse test</div>
+      <h2>Watch heat move through each stack</h2>
+      <p class="muted">Each bar is the 58 mm stack seen edge-on: five 10 mm cells with 2 mm barriers between them, cooled at both ends. Drag the time slider or press play. A cell counts as in runaway once 90 % of it has reacted.</p>
+    </header>
+    <div class="panel player">
+      <div class="controls">
+        <button class="btn primary" id="play" type="button" aria-label="Play">▶ Play</button>
+        <div class="tread" id="tread">0 s</div>
+        <div class="slider-wrap">
+          <label for="tslider" class="eyebrow">Time after trigger (log scale)</label>
+          <input type="range" id="tslider" min="0" max="1" value="0" step="1">
+        </div>
+      </div>
+      <div class="presets" id="presets"></div>
+      <div class="strips" id="strips"></div>
+      <div class="cbar"><div class="sp eyebrow">Temperature</div><div><div class="ramp" id="ramp"></div><div class="ticks"><span>25 °C</span><span>250</span><span>500</span><span>750</span><span>900 °C</span></div></div><div class="sp"></div></div>
+    </div>
+    <div class="panel">
+      <div class="controls" style="margin-bottom:14px">
+        <span class="eyebrow">Detail for</span>
+        <div class="seg" id="dseg" role="group" aria-label="Design for detail charts"></div>
+      </div>
+      <div class="grid2">
+        <div class="chart" id="ch-profile"></div>
+        <div class="chart" id="ch-history"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="normal">
+    <header>
+      <div class="eyebrow">Normal operation</div>
+      <h2>The insulator's daily cost</h2>
+      <p class="muted">Steady temperature through the stack with every cell generating heat. Heat can only leave through the cooled ends, so a 0.03 W/m·K layer between cells raises the centre cell by about 27 K. The switch stays in its conducting state at these temperatures and matches the conductor.</p>
+    </header>
+    <div class="panel"><div class="chart" id="ch-normal"></div></div>
+  </section>
+
+  <section id="map">
+    <header>
+      <div class="eyebrow">Design map</div>
+      <h2>How good does the switch have to be?</h2>
+      <p class="muted">361 simulations of the switchable barrier, varying its thickness and its conductivity once switched off (k<sub>off</sub>). Hover a square for details.</p>
+    </header>
+    <div class="grid2" style="align-items:start">
+      <div class="panel"><div class="chart" id="ch-map"></div></div>
+      <div class="callouts" style="grid-template-columns:1fr">
+        <div class="callout"><div class="eyebrow">Boundary</div><div class="big" id="gstar">–</div><p>The contained region is bounded by a constant hot-state conductance k<sub>off</sub>/L. The runaway cell must lose heat to the cooled end (h = <span data-p="h"></span>) faster than it leaks through the barrier.</p></div>
+        <div class="callout"><div class="eyebrow">All or nothing</div><div class="big" id="outcomes">–</div><p>Every run ends with either 1 or all 5 cells in runaway. Once cell 2 goes, each later cell faces a trigger at least as severe, so the barrier has to stop the first hand-off.</p></div>
+        <div class="callout"><div class="eyebrow">Default design</div><div class="big" id="margin">–</div><p>The default barrier (2 mm, k<sub>off</sub> = 0.05 W/m·K) sits inside the boundary, but not by much. A real design would want more margin.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tsw">
+    <header>
+      <div class="eyebrow">Switch temperature</div>
+      <h2>The window where the switch helps</h2>
+      <p class="muted">Same switchable barrier, with the switch temperature T<sub>sw</sub> swept. Set it too low and it switches off during normal use. Set it too high and it switches off only after the neighbouring cell has started to self-heat.</p>
+    </header>
+    <div class="panel">
+      <div class="chart" id="ch-tsw-peak"></div>
+      <div class="chart" id="ch-tsw-n" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section id="method">
+    <header>
+      <div class="eyebrow">Method and validation</div>
+      <h2>How the numbers were made</h2>
+    </header>
+    <div class="grid2" style="align-items:start">
+      <div class="panel" style="display:grid; gap:12px">
+        <h3>Model</h3>
+        <div class="eq">ρc<sub>p</sub> ∂T/∂t = ∂/∂x( k(T) ∂T/∂x ) + q<sub>rxn</sub>
+dα/dt = k<sub>eff</sub>(T)(1 − α),   q<sub>rxn</sub> = ρc<sub>p</sub> ΔT<sub>ad</sub> dα/dt
+k<sub>eff</sub> = k<sub>arr</sub>k<sub>max</sub>/(k<sub>arr</sub>+k<sub>max</sub>),  k<sub>arr</sub> = A e<sup>−E<sub>a</sub>/RT</sup>
+ln k<sub>barrier</sub> = ln k<sub>off</sub> + ln(k<sub>on</sub>/k<sub>off</sub>)/(1+e<sup>(T−T<sub>sw</sub>)/w</sup>)</div>
+        <p class="small muted">Finite volumes with harmonic-mean face conductances. Backward-Euler conduction with k(T) lagged, solved as a tridiagonal system. An exact exponential update for the reaction, coupled by operator splitting. Adaptive steps while a cell ignites. Energy is tracked every step; the worst residual across all runs is <span class="num" id="eerr"></span> of the total.</p>
+        <h3 style="margin-top:6px">Validation tests (pytest, run on every push)</h3>
+        <div class="tests">
+          <div><span class="ck">✓</span><span>Insulated stack, no reaction: total energy constant to 10<sup>−12</sup>, even across the nonlinear switch.</span></div>
+          <div><span class="ck">✓</span><span>Steady conduction through cell | barrier | cell matches the series-resistance solution to 10<sup>−8</sup> K.</span></div>
+          <div><span class="ck">✓</span><span>A single adiabatic reacting node ends at exactly T<sub>0</sub> + ΔT<sub>ad</sub>, and ignites within 1 % of a stiff ODE solver.</span></div>
+          <div><span class="ck">✓</span><span>Propagation time converges under grid and time-step refinement (shown right).</span></div>
+        </div>
+      </div>
+      <div class="panel" style="display:grid; gap:12px">
+        <div class="chart" id="ch-conv"></div>
+        <p class="small muted">The convergence test caught a modelling problem. Extended to a 900 °C burning cell, the onset-fitted Arrhenius rate reaches about 10<sup>9</sup> s<sup>−1</sup>. That makes the reaction front around 0.1 µm thick, so no practical mesh resolves it and the predicted time never settles as the mesh is refined. Capping the rate at k<sub>max</sub> = 1 s<sup>−1</sup>, standing in for the transport limits real decomposition has, gives a 0.6 mm front and a converged answer.</p>
+      </div>
+    </div>
+    <div class="panel" style="display:grid; gap:10px">
+      <h3>Limitations</h3>
+      <ul class="lim small muted">
+        <li>1D: heat only flows through the stack thickness, and the cooled ends are the only heat sink. With weak end cooling (h ≲ 30 W/m²·K) no barrier stops propagation in this model.</li>
+        <li>Single-step lumped kinetics with a rate ceiling. Real runaway involves several overlapping reactions.</li>
+        <li>No venting, ejecta, gas flow, radiation or contact resistance.</li>
+        <li>An idealised switch: instant, reversible, with no hysteresis or wear.</li>
+        <li>All parameters are illustrative, as noted at the top.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <span>Generated by <span class="mono">python -m runaway.explorer</span> from the simulation code in the repository. MIT licensed.</span>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+(function () {
+  "use strict";
+  const D = DATA, P = D.params, R = D.runaway;
+  const DESIGNS = ["none", "conductor", "insulator", "switchable"];
+  const LABEL = { none: "No barrier", conductor: "Static conductor", insulator: "Static insulator", switchable: "Switchable" };
+  const SUB = {
+    none: "direct contact",
+    conductor: "2 mm · k = 5 W/m·K",
+    insulator: "2 mm · k = 0.03 W/m·K",
+    switchable: "2 mm · 5 → 0.05 W/m·K at 120 °C",
+  };
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const dcol = (d) => css("--d-" + d);
+  const ccol = (i) => css("--c" + (i + 1));
+  const NS = "http://www.w3.org/2000/svg";
+  const $ = (id) => document.getElementById(id);
+
+  // ---- formatting -------------------------------------------------------
+  const fmtT = (t) => t === 0 ? "0 s" : t < 1 ? t.toFixed(2) + " s" : t < 10 ? t.toFixed(1) + " s" : t < 120 ? Math.round(t) + " s" : (t / 60).toFixed(t < 600 ? 1 : 0) + " min";
+  document.querySelectorAll("[data-p]").forEach((el) => {
+    const k = el.dataset.p, v = P[k];
+    el.textContent = k === "q_normal" ? (v / 1e4).toFixed(0) + "×10⁴ W/m³" : k === "T_trigger" ? v + " °C" : k === "h" ? v + " W/m²·K" : v;
+  });
+
+  // ---- inferno colormap (25 → 900 °C) -----------------------------------
+  const INF = ["#000004", "#160b39", "#420a68", "#6a176e", "#932667", "#bc3754", "#dd513a", "#f37819", "#fca50a", "#f6d746", "#fcffa4"].map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
+  function tcolor(T) {
+    const u = Math.max(0, Math.min(1, (T - 25) / 875)) * 10, i = Math.min(9, Math.floor(u)), f = u - i;
+    const a = INF[i], b = INF[i + 1];
+    return "rgb(" + a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",") + ")";
+  }
+  $("ramp").style.background = "linear-gradient(90deg," + Array.from({ length: 11 }, (_, i) => tcolor(25 + 87.5 * i)).join(",") + ")";
+
+  // ---- tiny SVG chart kit ----------------------------------------------
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function lin(d0, d1, r0, r1) { const f = (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0); f.inv = (p) => d0 + (p - r0) / (r1 - r0) * (d1 - d0); return f; }
+  function logs(d0, d1, r0, r1) { const a = Math.log10(d0), b = Math.log10(d1); const f = (v) => r0 + (Math.log10(Math.max(v, d0)) - a) / (b - a) * (r1 - r0); f.inv = (p) => Math.pow(10, a + (p - r0) / (r1 - r0) * (b - a)); return f; }
+  function niceTicks(a, b, n) {
+    const span = b - a, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || 10 * mag;
+    const out = []; for (let v = Math.ceil(a / step) * step; v <= b + 1e-9; v += step) out.push(+v.toFixed(10)); return out;
+  }
+  function frame(container, opts) {
+    container.innerHTML = "";
+    const W = Math.max(280, container.clientWidth), H = opts.h || 260;
+    const m = Object.assign({ l: 46, r: 14, t: 10, b: 34 }, opts.m || {});
+    if (opts.title) {
+      const t = document.createElement("div"); t.className = "chart-title";
+      t.innerHTML = opts.title + (opts.sub ? "<span>" + opts.sub + "</span>" : "");
+      container.appendChild(t);
+    }
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": opts.aria || opts.title || "chart" }, container);
+    const tip = document.createElement("div"); tip.className = "tip"; container.appendChild(tip);
+    return { svg, W, H, m, iw: W - m.l - m.r, ih: H - m.t - m.b, tip };
+  }
+  function axes(f, x, y, xt, yt, xlab, ylab, xfmt, yfmt) {
+    const g = el("g", { class: "grid" }, f.svg), a = el("g", { class: "axis" }, f.svg);
+    yt.forEach((v) => {
+      el("line", { x1: f.m.l, x2: f.m.l + f.iw, y1: y(v), y2: y(v) }, g);
+      el("text", { x: f.m.l - 6, y: y(v) + 3.5, "text-anchor": "end" }, a).textContent = yfmt ? yfmt(v) : v;
+    });
+    xt.forEach((v) => {
+      el("text", { x: x(v), y: f.m.t + f.ih + 16, "text-anchor": "middle" }, a).textContent = xfmt ? xfmt(v) : v;
+    });
+    el("line", { x1: f.m.l, x2: f.m.l + f.iw, y1: f.m.t + f.ih, y2: f.m.t + f.ih }, a);
+    if (xlab) el("text", { x: f.m.l + f.iw, y: f.H - 2, "text-anchor": "end" }, a).textContent = xlab;
+    if (ylab) { const t = el("text", { x: 0, y: 0, transform: `translate(11 ${f.m.t + f.ih / 2}) rotate(-90)`, "text-anchor": "middle" }, a); t.textContent = ylab; }
+  }
+  function path(pts) { return pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(""); }
+  function showTip(f, html, px, py) {
+    f.tip.innerHTML = html; f.tip.style.display = "block";
+    const tw = f.tip.offsetWidth, th = f.tip.offsetHeight, cw = f.svg.clientWidth, scale = cw / f.W;
+    const off = f.svg.getBoundingClientRect().top - f.svg.parentNode.getBoundingClientRect().top;
+    let left = px * scale + 12; if (left + tw > cw) left = px * scale - tw - 12;
+    f.tip.style.left = Math.max(0, left) + "px"; f.tip.style.top = Math.max(0, off + py * scale - th / 2) + "px";
+  }
+  function hideTip(f) { f.tip.style.display = "none"; }
+  function svgPoint(f, ev) { const r = f.svg.getBoundingClientRect(); return [(ev.clientX - r.left) * f.W / r.width, (ev.clientY - r.top) * f.H / r.height]; }
+  function layerBands(f, x, layers) {
+    const g = el("g", {}, f.svg);
+    layers.forEach((L) => { if (L.kind === "barrier") el("rect", { x: x(L.x0), y: f.m.t, width: Math.max(1, x(L.x1) - x(L.x0)), height: f.ih, fill: css("--band") }, g); });
+    return g;
+  }
+
+  // ---- 1. scoreboard ----------------------------------------------------
+  (function score() {
+    const box = $("score");
+    const peaks = DESIGNS.map((d) => D.normal[d].peak), maxP = Math.max(...peaks), amb = P.T_amb;
+    let h = '<div class="score-row head"><div>Design</div><div>Normal use · peak cell temperature</div><div>Abuse · cells in runaway</div></div>';
+    DESIGNS.forEach((d) => {
+      const r = R.designs[d], pk = D.normal[d].peak, w = ((pk - amb) / (maxP - amb) * 78).toFixed(1);
+      const dots = Array.from({ length: P.n_cells }, (_, i) => `<span class="dot ${i === 0 ? "trig" : i < r.n_prop ? "on" : ""}" title="cell ${i + 1}"></span>`).join("");
+      const ok = r.n_prop === 1;
+      h += `<div class="score-row">
+        <div class="dname"><span class="swatch" style="background:${dcol(d)}"></span><div>${LABEL[d]}<small>${SUB[d]}</small></div></div>
+        <div class="bar-track"><span class="bar" style="width:${w}%;background:${dcol(d)}"></span><span class="num">${pk.toFixed(1)} °C</span></div>
+        <div class="dots">${dots}<span class="verdict ${ok ? "ok" : "bad"}">${ok ? "contained" : r.n_prop + " of " + P.n_cells}</span></div>
+      </div>`;
+    });
+    box.innerHTML = h;
+  })();
+
+  // ---- 2. player ----------------------------------------------------------
+  const T = R.t, NT = T.length;
+  const slider = $("tslider"); slider.max = NT - 1;
+  const nearest = (t) => { let b = 0; T.forEach((v, i) => { if (Math.abs(Math.log10(v + 1e-3) - Math.log10(t + 1e-3)) < Math.abs(Math.log10(T[b] + 1e-3) - Math.log10(t + 1e-3))) b = i; }); return b; };
+  let ti = nearest(30), detail = "switchable";
+  const XMAX = Math.max(...DESIGNS.map((d) => R.designs[d].layers.at(-1).x1));
+
+  // node edges for drawing each kept node as a rectangle
+  const geo = {};
+  DESIGNS.forEach((d) => {
+    const ds = R.designs[d], rects = [];
+    ds.layers.forEach((L) => {
+      const idx = ds.x.map((v, i) => [v, i]).filter(([v]) => v > L.x0 && v < L.x1);
+      idx.forEach(([v, i], k) => {
+        const a = k === 0 ? L.x0 : (idx[k - 1][0] + v) / 2, b = k === idx.length - 1 ? L.x1 : (v + idx[k + 1][0]) / 2;
+        rects.push({ i, a, b });
+      });
+    });
+    geo[d] = rects;
+  });
+
+  const strips = $("strips"), stripRefs = {};
+  DESIGNS.forEach((d) => {
+    const row = document.createElement("div"); row.className = "strip";
+    row.innerHTML = `<div class="lbl"><span class="swatch" style="background:${dcol(d)}"></span>${LABEL[d]}</div><svg viewBox="0 0 1000 52" preserveAspectRatio="none" aria-label="${LABEL[d]} stack temperature"></svg><div class="stat"></div>`;
+    strips.appendChild(row);
+    const svg = row.querySelector("svg"), ds = R.designs[d], x = lin(0, XMAX, 0, 1000);
+    const rects = geo[d].map((g) => el("rect", { x: x(g.a), y: 14, width: Math.max(0.6, x(g.b) - x(g.a) + 0.4), height: 30 }, svg));
+    const marks = [];
+    let c = 0;
+    ds.layers.forEach((L) => {
+      if (L.kind === "barrier") {
+        el("rect", { x: x(L.x0), y: 14, width: x(L.x1) - x(L.x0), height: 30, fill: "none", stroke: css("--ink-3"), "stroke-width": 1, "vector-effect": "non-scaling-stroke", "stroke-dasharray": "2 2" }, svg);
+      } else {
+        const t = el("text", { x: x((L.x0 + L.x1) / 2), y: 10, "text-anchor": "middle" }, svg);
+        t.textContent = "cell " + (++c); marks.push(t);
+      }
+    });
+    stripRefs[d] = { rects, marks, stat: row.querySelector(".stat") };
+  });
+  // SVG text in a stretched viewBox would distort; draw labels with an HTML overlay instead
+  DESIGNS.forEach((d) => stripRefs[d].marks.forEach((t) => t.remove()));
+  DESIGNS.forEach((d) => {
+    const svg = strips.querySelectorAll(".strip svg")[DESIGNS.indexOf(d)];
+    const wrap = document.createElement("div"); wrap.style.position = "relative";
+    svg.parentNode.insertBefore(wrap, svg); wrap.appendChild(svg);
+    let c = 0;
+    R.designs[d].layers.forEach((L) => {
+      if (L.kind !== "cell") return; c++;
+      const s = document.createElement("span");
+      s.style.cssText = `position:absolute;top:-2px;left:${((L.x0 + L.x1) / 2 / XMAX * 100).toFixed(2)}%;transform:translateX(-50%);font:11px var(--f-mono);color:var(--ink-3);white-space:nowrap`;
+      s.dataset.cell = c - 1; s.textContent = "cell " + c;
+      wrap.appendChild(s);
+    });
+    stripRefs[d].labels = wrap.querySelectorAll("span");
+  });
+
+  const presets = [[0, "start"], [2, "cell 1 burning"], [16, "cell 2 ignites"], [40, "mid-propagation"], [300, "5 min"], [1800, "30 min"]];
+  presets.forEach(([t, lab]) => {
+    const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = lab + (t ? " · " + fmtT(t) : "");
+    b.onclick = () => { stop(); setT(nearest(t)); }; $("presets").appendChild(b);
+  });
+
+  function renderStrips() {
+    DESIGNS.forEach((d) => {
+      const ds = R.designs[d], row = ds.T[ti], ref = stripRefs[d];
+      ref.rects.forEach((r, k) => r.setAttribute("fill", tcolor(row[geo[d][k].i])));
+      const burnt = ds.alpha[ti].filter((a) => a > 0.9).length, maxT = Math.max(...row);
+      ref.labels.forEach((s) => { const on = ds.alpha[ti][+s.dataset.cell] > 0.9; s.style.color = on ? css("--hot") : css("--ink-3"); s.style.fontWeight = on ? "600" : "400"; });
+      ref.stat.innerHTML = `<b>${burnt}</b>/5 burnt<br>max ${maxT} °C`;
+    });
+    $("tread").innerHTML = fmtT(T[ti]);
+    slider.value = ti;
+  }
+
+  // detail charts
+  const seg = $("dseg");
+  DESIGNS.forEach((d) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = LABEL[d]; b.dataset.d = d;
+    b.setAttribute("aria-pressed", d === detail); b.onclick = () => { detail = d; seg.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x.dataset.d === d)); drawDetail(); };
+    seg.appendChild(b);
+  });
+
+  let prof, hist;
+  function drawDetail() {
+    const ds = R.designs[detail];
+    // profile T(x) at current time
+    prof = frame($("ch-profile"), { title: "Temperature through the stack", sub: "at t = " + fmtT(T[ti]), h: 250, aria: "temperature profile" });
+    const x = lin(0, XMAX, prof.m.l, prof.m.l + prof.iw), y = lin(0, 950, prof.m.t + prof.ih, prof.m.t);
+    layerBands(prof, x, ds.layers);
+    axes(prof, x, y, niceTicks(0, XMAX, 6), [0, 200, 400, 600, 800], "position [mm]", "T [°C]");
+    if (ds.barrier.T_sw) {
+      el("line", { x1: prof.m.l, x2: prof.m.l + prof.iw, y1: y(ds.barrier.T_sw), y2: y(ds.barrier.T_sw), stroke: css("--ink-3"), "stroke-dasharray": "4 3" }, prof.svg);
+      el("text", { x: prof.m.l + prof.iw - 4, y: y(ds.barrier.T_sw) - 5, "text-anchor": "end" }, prof.svg).textContent = "T_sw " + ds.barrier.T_sw + " °C";
+    }
+    prof.line = el("path", { fill: "none", stroke: dcol(detail), "stroke-width": 2, "stroke-linejoin": "round" }, prof.svg);
+    prof.x = x; prof.y = y;
+    const hover = el("rect", { x: prof.m.l, y: prof.m.t, width: prof.iw, height: prof.ih, fill: "transparent" }, prof.svg);
+    const dotp = el("circle", { r: 4.5, fill: dcol(detail), stroke: css("--surface"), "stroke-width": 2, visibility: "hidden" }, prof.svg);
+    hover.addEventListener("pointermove", (ev) => {
+      const [px] = svgPoint(prof, ev), xv = x.inv(px); let k = 0;
+      ds.x.forEach((v, i) => { if (Math.abs(v - xv) < Math.abs(ds.x[k] - xv)) k = i; });
+      const Tv = ds.T[ti][k], L = ds.layers.find((L) => ds.x[k] >= L.x0 && ds.x[k] <= L.x1);
+      dotp.setAttribute("cx", x(ds.x[k])); dotp.setAttribute("cy", y(Tv)); dotp.setAttribute("visibility", "visible");
+      showTip(prof, `<span class="k">x</span> ${ds.x[k].toFixed(1)} mm (${L ? L.kind : ""})<br><span class="k">T</span> ${Tv} °C`, x(ds.x[k]), y(Tv));
+    });
+    hover.addEventListener("pointerleave", () => { hideTip(prof); dotp.setAttribute("visibility", "hidden"); });
+
+    // cell-mean history
+    hist = frame($("ch-history"), { title: "Cell-mean temperature", sub: "dots: cell reaches 90 % reacted", h: 250, aria: "cell temperature history" });
+    const tx = logs(0.01, 3600, hist.m.l, hist.m.l + hist.iw), ty = lin(0, 950, hist.m.t + hist.ih, hist.m.t);
+    axes(hist, tx, ty, [0.01, 0.1, 1, 10, 100, 1000], [0, 200, 400, 600, 800], "time [s]", "T [°C]", (v) => v >= 1 ? v : v);
+    for (let c = 0; c < P.n_cells; c++) {
+      const pts = T.map((t, i) => [tx(Math.max(t, 0.01)), ty(ds.Tcell[i][c])]);
+      el("path", { d: path(pts), fill: "none", stroke: ccol(c), "stroke-width": 2, "stroke-linejoin": "round" }, hist.svg);
+      const tp = ds.t_prop[c];
+      if (tp !== null && c > 0) {
+        let k = 0; T.forEach((t, i) => { if (Math.abs(t - tp) < Math.abs(T[k] - tp)) k = i; });
+        el("circle", { cx: tx(tp), cy: ty(ds.Tcell[k][c]), r: 4.5, fill: ccol(c), stroke: css("--surface"), "stroke-width": 2 }, hist.svg);
+      }
+    }
+    hist.cursor = el("line", { y1: hist.m.t, y2: hist.m.t + hist.ih, stroke: css("--ink"), "stroke-width": 1, "stroke-dasharray": "3 3" }, hist.svg);
+    hist.tx = tx;
+    const lg = document.createElement("div"); lg.className = "legend";
+    lg.innerHTML = Array.from({ length: P.n_cells }, (_, c) => `<span><i style="background:${ccol(c)}"></i>cell ${c + 1}</span>`).join("");
+    $("ch-history").appendChild(lg);
+    const hv = el("rect", { x: hist.m.l, y: hist.m.t, width: hist.iw, height: hist.ih, fill: "transparent", style: "cursor:crosshair" }, hist.svg);
+    hv.addEventListener("pointermove", (ev) => {
+      const [px, py] = svgPoint(hist, ev), t = tx.inv(px), k = nearest(t);
+      showTip(hist, `<b>${fmtT(T[k])}</b><br>` + ds.Tcell[k].map((v, c) => `<span style="color:${ccol(c)}">●</span> cell ${c + 1}: ${v.toFixed(0)} °C`).join("<br>") + `<br><span class="k">click to jump here</span>`, px, py);
+    });
+    hv.addEventListener("pointerleave", () => hideTip(hist));
+    hv.addEventListener("click", (ev) => { stop(); setT(nearest(tx.inv(svgPoint(hist, ev)[0]))); });
+    updateDetail();
+  }
+  function updateDetail() {
+    const ds = R.designs[detail];
+    prof.line.setAttribute("d", path(ds.x.map((v, i) => [prof.x(v), prof.y(ds.T[ti][i])])));
+    prof.svg.parentNode.querySelector(".chart-title span").textContent = "at t = " + fmtT(T[ti]);
+    const cx = hist.tx(Math.max(T[ti], 0.01)); hist.cursor.setAttribute("x1", cx); hist.cursor.setAttribute("x2", cx);
+  }
+
+  function setT(i) { ti = Math.max(0, Math.min(NT - 1, i)); renderStrips(); updateDetail(); }
+  slider.addEventListener("input", () => { stop(); setT(+slider.value); });
+
+  let raf = null, last = 0;
+  function tick(ts) {
+    if (ts - last > 45) { last = ts; if (ti >= NT - 1) { stop(); return; } setT(ti + 1); }
+    raf = requestAnimationFrame(tick);
+  }
+  function stop() { if (raf) cancelAnimationFrame(raf); raf = null; $("play").innerHTML = "▶ Play"; $("play").setAttribute("aria-label", "Play"); }
+  $("play").onclick = () => {
+    if (raf) { stop(); return; }
+    if (ti >= NT - 1) setT(0);
+    $("play").innerHTML = "❚❚ Pause"; $("play").setAttribute("aria-label", "Pause");
+    raf = requestAnimationFrame(tick);
+  };
+
+  // ---- 3. normal operation ---------------------------------------------
+  function drawNormal() {
+    const f = frame($("ch-normal"), { title: "Steady temperature in normal operation", sub: "q = 2×10⁴ W/m³ per cell, h = " + P.h + " W/m²·K at both ends", h: 280, aria: "normal operation profiles" });
+    const allT = DESIGNS.flatMap((d) => D.normal[d].T), lo = P.T_amb, hi = Math.ceil(Math.max(...allT) / 10) * 10 + 5;
+    const x = lin(0, XMAX, f.m.l, f.m.l + f.iw), y = lin(lo, hi, f.m.t + f.ih, f.m.t);
+    layerBands(f, x, D.normal.switchable.layers);
+    axes(f, x, y, niceTicks(0, XMAX, 6), niceTicks(lo, hi, 5), "position [mm]", "T [°C]");
+    DESIGNS.forEach((d) => {
+      const n = D.normal[d];
+      el("path", { d: path(n.x.map((v, i) => [x(v), y(n.T[i])])), fill: "none", stroke: dcol(d), "stroke-width": d === "switchable" ? 2.5 : 2, "stroke-dasharray": d === "none" ? "5 4" : "none", "stroke-linejoin": "round" }, f.svg);
+    });
+    // direct labels at the peak of the two extremes
+    const ins = D.normal.insulator, cnd = D.normal.switchable;
+    const lab = (n, txt, dy) => { const k = n.T.indexOf(Math.max(...n.T)); el("text", { x: x(n.x[k]), y: y(n.T[k]) + dy, "text-anchor": "middle", class: "lbl-strong" }, f.svg).textContent = txt; };
+    lab(ins, "insulator · " + ins.peak.toFixed(1) + " °C", -8);
+    lab(cnd, "conductor ≈ switchable · " + cnd.peak.toFixed(1) + " °C", -10);
+    const lg = document.createElement("div"); lg.className = "legend";
+    lg.innerHTML = DESIGNS.map((d) => `<span><i style="background:${dcol(d)}"></i>${LABEL[d]} · ${D.normal[d].peak.toFixed(1)} °C</span>`).join("");
+    $("ch-normal").appendChild(lg);
+    const hv = el("rect", { x: f.m.l, y: f.m.t, width: f.iw, height: f.ih, fill: "transparent" }, f.svg);
+    const vl = el("line", { y1: f.m.t, y2: f.m.t + f.ih, stroke: css("--ink-3"), visibility: "hidden" }, f.svg);
+    hv.addEventListener("pointermove", (ev) => {
+      const [px, py] = svgPoint(f, ev), xv = x.inv(px);
+      vl.setAttribute("x1", px); vl.setAttribute("x2", px); vl.setAttribute("visibility", "visible");
+      showTip(f, `<b>x = ${xv.toFixed(1)} mm</b><br>` + DESIGNS.map((d) => {
+        const n = D.normal[d]; let k = 0; n.x.forEach((v, i) => { if (Math.abs(v - xv) < Math.abs(n.x[k] - xv)) k = i; });
+        return `<span style="color:${dcol(d)}">●</span> ${LABEL[d]}: ${n.T[k].toFixed(1)} °C`;
+      }).join("<br>"), px, py);
+    });
+    hv.addEventListener("pointerleave", () => { hideTip(f); vl.setAttribute("visibility", "hidden"); });
+  }
+
+  // ---- 4. design map -----------------------------------------------------
+  function boundaryG() {
+    const M = D.design_map, G = [];
+    M.thickness_mm.forEach((L, j) => {
+      const col = M.n.map((r) => r[j]);
+      const ok = M.k_off.filter((_, i) => col[i] === 1), bad = M.k_off.filter((_, i) => col[i] > 1);
+      if (ok.length && bad.length) G.push(Math.sqrt(Math.max(...ok) * Math.min(...bad)) / (L / 1000));
+    });
+    return G.length ? Math.exp(G.reduce((s, g) => s + Math.log(g), 0) / G.length) : null;
+  }
+  function drawMap() {
+    const M = D.design_map, nx = M.thickness_mm.length, ny = M.k_off.length;
+    const f = frame($("ch-map"), { title: "Cells in runaway, switchable barrier", sub: "k_on = 5 W/m·K, T_sw = 120 °C", h: 340, m: { l: 52, b: 38 }, aria: "design map" });
+    const lx = (v) => Math.log10(v);
+    const dx = M.thickness_mm[1] - M.thickness_mm[0], dly = lx(M.k_off[1]) - lx(M.k_off[0]);
+    const x = lin(M.thickness_mm[0] - dx / 2, M.thickness_mm[nx - 1] + dx / 2, f.m.l, f.m.l + f.iw);
+    const yl = lin(lx(M.k_off[0]) - dly / 2, lx(M.k_off[ny - 1]) + dly / 2, f.m.t + f.ih, f.m.t), y = (v) => yl(lx(v));
+    const ok = css("--ok-soft"), bad = css("--hot");
+    const cells = el("g", {}, f.svg);
+    for (let i = 0; i < ny; i++) for (let j = 0; j < nx; j++) {
+      const n = M.n[i][j];
+      el("rect", { x: x(M.thickness_mm[j] - dx / 2) + 0.5, y: yl(lx(M.k_off[i]) + dly / 2) + 0.5, width: x(dx) - x(0) - 1, height: yl(0) - yl(dly) - 1,
+        fill: n === 1 ? ok : bad, "fill-opacity": n === 1 ? 1 : 0.35 + 0.65 * (n - 1) / 4, "data-i": i, "data-j": j }, cells);
+    }
+    const a = el("g", { class: "axis" }, f.svg);
+    [1, 2, 3, 4, 5].forEach((v) => { el("text", { x: x(v), y: f.m.t + f.ih + 16, "text-anchor": "middle" }, a).textContent = v; });
+    [0.02, 0.05, 0.1, 0.2, 0.5, 1].forEach((v) => { el("text", { x: f.m.l - 6, y: y(v) + 3.5, "text-anchor": "end" }, a).textContent = v; });
+    el("text", { x: f.m.l + f.iw, y: f.H - 2, "text-anchor": "end" }, a).textContent = "barrier thickness [mm]";
+    el("text", { transform: `translate(11 ${f.m.t + f.ih / 2}) rotate(-90)`, "text-anchor": "middle" }, a).textContent = "k_off [W/m·K]";
+    const G = boundaryG();
+    if (G) {
+      const pts = []; for (let L = M.thickness_mm[0]; L <= M.thickness_mm[nx - 1] + 1e-9; L += 0.05) { const k = G * L / 1000; if (k >= M.k_off[0] * 0.85 && k <= M.k_off[ny - 1]) pts.push([x(L), y(k)]); }
+      el("path", { d: path(pts), fill: "none", stroke: css("--ink"), "stroke-width": 1.5, "stroke-dasharray": "5 4" }, f.svg);
+    }
+    const df = M.default;
+    el("path", { d: starPath(x(df.thickness_mm), y(df.k_off), 9, 4), fill: css("--ink"), stroke: css("--surface"), "stroke-width": 1.5 }, f.svg);
+    el("text", { x: x(df.thickness_mm) + 12, y: y(df.k_off) + 4, class: "lbl-strong" }, f.svg).textContent = "default";
+    el("text", { x: f.m.l + f.iw - 8, y: f.m.t + f.ih - 10, "text-anchor": "end", class: "lbl-strong", style: "fill:" + css("--ok") }, f.svg).textContent = "contained";
+    el("text", { x: f.m.l + 8, y: f.m.t + 16, class: "lbl-strong", style: "fill:#fff" }, f.svg).textContent = "propagates through all 5 cells";
+    const outline = el("rect", { fill: "none", stroke: css("--ink"), "stroke-width": 2, visibility: "hidden", "pointer-events": "none" }, f.svg);
+    cells.addEventListener("pointermove", (ev) => {
+      const r = ev.target; if (!r.dataset || r.dataset.i === undefined) return;
+      const i = +r.dataset.i, j = +r.dataset.j, n = M.n[i][j], L = M.thickness_mm[j], k = M.k_off[i];
+      ["x", "y", "width", "height"].forEach((a) => outline.setAttribute(a, r.getAttribute(a))); outline.setAttribute("visibility", "visible");
+      showTip(f, `<span class="k">thickness</span> ${L.toFixed(2)} mm<br><span class="k">k_off</span> ${k.toFixed(3)} W/m·K<br><span class="k">k_off/L</span> ${(k / L * 1000).toFixed(0)} W/m²·K<br><b style="color:${n === 1 ? css("--ok") : css("--hot")}">${n === 1 ? "contained" : n + " of 5 cells in runaway"}</b>`, +r.getAttribute("x") + +r.getAttribute("width"), +r.getAttribute("y"));
+    });
+    cells.addEventListener("pointerleave", () => { hideTip(f); outline.setAttribute("visibility", "hidden"); });
+    const lg = document.createElement("div"); lg.className = "legend";
+    lg.innerHTML = `<span><i style="background:${ok};height:10px;width:10px"></i>contained (1 of 5)</span><span><i style="background:${bad};height:10px;width:10px"></i>runaway spreads (5 of 5)</span><span><i style="background:${css("--ink")}"></i>constant k_off/L boundary</span>`;
+    $("ch-map").appendChild(lg);
+
+    $("gstar").textContent = G ? "k_off/L ≈ " + G.toFixed(0) + " W/m²·K" : "–";
+    const seen = [...new Set(M.n.flat())].sort();
+    $("outcomes").textContent = seen.join(" or ") + " cells";
+    const Gd = df.k_off / (df.thickness_mm / 1000);
+    $("margin").textContent = G ? Gd.toFixed(0) + " W/m²·K · " + Math.round((1 - Gd / G) * 100) + " % below" : "–";
+  }
+  function starPath(cx, cy, R, r) { let d = ""; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; d += (i ? "L" : "M") + (cx + rr * Math.cos(a)).toFixed(1) + " " + (cy + rr * Math.sin(a)).toFixed(1); } return d + "Z"; }
+
+  // ---- 5. T_sw sweep -----------------------------------------------------
+  function drawTsw() {
+    const S = D.tsw, cond = D.normal.conductor.peak, ins = D.normal.insulator.peak;
+    const okI = S.T_sw.map((t, i) => S.peak[i] <= cond + 1 && S.n[i] === 1);
+    const win = S.T_sw.filter((_, i) => okI[i]), w0 = Math.min(...win), w1 = Math.max(...win);
+    const x0 = S.T_sw[0], x1 = S.T_sw.at(-1);
+    function common(f, x) {
+      el("rect", { x: x(w0), y: f.m.t, width: x(w1) - x(w0), height: f.ih, fill: css("--window") }, f.svg);
+    }
+    const f1 = frame($("ch-tsw-peak"), { title: "Normal-use peak temperature", sub: "works window: " + w0 + "–" + w1 + " °C", h: 220, aria: "normal peak vs switch temperature" });
+    const x = lin(x0, x1, f1.m.l, f1.m.l + f1.iw), y = lin(Math.floor(cond - 3), Math.ceil(ins + 3), f1.m.t + f1.ih, f1.m.t);
+    common(f1, x);
+    axes(f1, x, y, niceTicks(x0, x1, 8), niceTicks(Math.floor(cond - 3), Math.ceil(ins + 3), 4), null, "T [°C]");
+    [[cond, "conductor", "--d-conductor"], [ins, "insulator", "--d-insulator"]].forEach(([v, t, c]) => {
+      el("line", { x1: f1.m.l, x2: f1.m.l + f1.iw, y1: y(v), y2: y(v), stroke: css(c), "stroke-dasharray": "5 4" }, f1.svg);
+      el("text", { x: f1.m.l + f1.iw - 4, y: y(v) - 5, "text-anchor": "end" }, f1.svg).textContent = "static " + t + " " + v.toFixed(1) + " °C";
+    });
+    el("path", { d: path(S.T_sw.map((t, i) => [x(t), y(S.peak[i])])), fill: "none", stroke: dcol("switchable"), "stroke-width": 2.5 }, f1.svg);
+    el("text", { x: x(w0) + 6, y: f1.m.t + 14, class: "lbl-strong", style: "fill:" + css("--ok") }, f1.svg).textContent = "switch helps";
+
+    const f2 = frame($("ch-tsw-n"), { title: "Cells in runaway after triggering cell 1", h: 170, aria: "cells in runaway vs switch temperature" });
+    const x2 = lin(x0, x1, f2.m.l, f2.m.l + f2.iw), y2 = lin(0.5, 5.5, f2.m.t + f2.ih, f2.m.t);
+    common(f2, x2);
+    axes(f2, x2, y2, niceTicks(x0, x1, 8), [1, 3, 5], "switch temperature T_sw [°C]", "cells");
+    const st = []; S.T_sw.forEach((t, i) => { const xm = i ? x2((S.T_sw[i - 1] + t) / 2) : x2(t); if (i) st.push([xm, y2(S.n[i - 1])]); st.push([xm, y2(S.n[i])]); }); st.push([x2(x1), y2(S.n.at(-1))]);
+    el("path", { d: path(st), fill: "none", stroke: dcol("switchable"), "stroke-width": 2.5 }, f2.svg);
+
+    [[f1, x, (i) => `peak ${S.peak[i].toFixed(1)} °C`], [f2, x2, (i) => `${S.n[i]} of 5 cells`]].forEach(([f, xs, txt]) => {
+      const hv = el("rect", { x: f.m.l, y: f.m.t, width: f.iw, height: f.ih, fill: "transparent" }, f.svg);
+      const vl = el("line", { y1: f.m.t, y2: f.m.t + f.ih, stroke: css("--ink-3"), visibility: "hidden" }, f.svg);
+      hv.addEventListener("pointermove", (ev) => {
+        const [px, py] = svgPoint(f, ev), tv = xs.inv(px); let k = 0; S.T_sw.forEach((v, i) => { if (Math.abs(v - tv) < Math.abs(S.T_sw[k] - tv)) k = i; });
+        vl.setAttribute("x1", xs(S.T_sw[k])); vl.setAttribute("x2", xs(S.T_sw[k])); vl.setAttribute("visibility", "visible");
+        showTip(f, `<b>T_sw = ${S.T_sw[k]} °C</b><br>${txt(k)}<br>${okI[k] ? '<span style="color:' + css("--ok") + '">cools and protects</span>' : S.n[k] > 1 ? "switches too late" : "trips in normal use"}`, px, py);
+      });
+      hv.addEventListener("pointerleave", () => { hideTip(f); vl.setAttribute("visibility", "hidden"); });
+    });
+  }
+
+  // ---- 6. convergence ------------------------------------------------------
+  function drawConv() {
+    const C = D.convergence;
+    const f = frame($("ch-conv"), { title: "Cell-2 propagation time vs mesh", sub: "static conductor", h: 250, aria: "mesh convergence" });
+    const x = logs(C.n[0], C.n.at(-1), f.m.l, f.m.l + f.iw);
+    const ymax = Math.ceil(Math.max(...C.capped, ...C.uncapped.filter((v) => v !== null)) / 5) * 5;
+    const y = lin(0, ymax, f.m.t + f.ih, f.m.t);
+    axes(f, x, y, C.n, niceTicks(0, ymax, 5), "volumes per cell", "t₂ [s]");
+    [["capped", "--accent", "with rate ceiling: converges"], ["uncapped", "--hot", "pure Arrhenius: does not converge"]].forEach(([k, c, lab]) => {
+      const pts = C.n.map((n, i) => [n, C[k][i]]).filter((p) => p[1] !== null);
+      el("path", { d: path(pts.map(([n, v]) => [x(n), y(v)])), fill: "none", stroke: css(c), "stroke-width": 2 }, f.svg);
+      pts.forEach(([n, v]) => {
+        const dt = el("circle", { cx: x(n), cy: y(v), r: 5, fill: css(c), stroke: css("--surface"), "stroke-width": 2, style: "cursor:default" }, f.svg);
+        dt.addEventListener("pointerenter", () => showTip(f, `<b>${n} volumes / cell</b><br>${lab.split(":")[0]}<br>t₂ = ${v.toFixed(2)} s`, x(n), y(v)));
+        dt.addEventListener("pointerleave", () => hideTip(f));
+      });
+      const last = pts.at(-1);
+      el("text", { x: x(last[0]) - 8, y: y(last[1]) + (k === "capped" ? -10 : 18), "text-anchor": "end", class: "lbl-strong", style: "fill:" + css(c) }, f.svg).textContent = lab;
+    });
+  }
+
+  $("eerr").textContent = Math.max(...DESIGNS.map((d) => R.designs[d].energy_err)).toExponential(0).replace("e-", "×10⁻").replace(/(\d+)$/, (m) => m.split("").map((c) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]).join(""));
+
+  function drawAll() { drawDetail(); drawNormal(); drawMap(); drawTsw(); drawConv(); renderStrips(); }
+  drawAll();
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener && mq.addEventListener("change", drawAll);
+  new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>

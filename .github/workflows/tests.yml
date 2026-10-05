@@ -23,3 +23,5 @@ jobs:
         run: pytest -v
       - name: Smoke-test the figure pipeline
         run: python -m runaway.demo --quick --out /tmp/figures
+      - name: Smoke-test the explorer build
+        run: python -m runaway.explorer --quick --out /tmp/explorer.html

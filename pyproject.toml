@@ -17,6 +17,9 @@ test = ["pytest>=7"]
 [tool.setuptools]
 packages = ["runaway"]
 
+[tool.setuptools.package-data]
+runaway = ["explorer_template.html"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
