@@ -55,9 +55,12 @@ placeholders, so the conclusions are qualitative.
 % =====================================================================
 \section{Introduction}
 
-Thermal runaway in one lithium-ion cell releases enough heat to trigger runaway in
-its neighbours. Preventing this cell-to-cell propagation is a central goal of
-battery-pack safety design. The usual approach places a thermal barrier between
+Thermal runaway in a lithium-ion cell is a self-accelerating sequence of exothermic
+decomposition reactions that can drive the cell to several hundred degrees and lead to
+fire~\cite{feng2018review,wang2012fire,bandhauer2011}. In a module, the heat released by
+one failing cell can trigger runaway in its neighbours, as multi-cell abuse experiments
+have shown repeatedly~\cite{lamb2015,lopez2015propagation}. Preventing this cell-to-cell
+propagation is a central goal of battery-pack safety design. The usual approach places a thermal barrier between
 cells, which creates a design conflict:
 
 \begin{itemize}
@@ -71,8 +74,31 @@ cells, which creates a design conflict:
 
 Temperature-responsive barriers and thermal switches, whose conductivity changes
 with temperature, are an active research topic as a way out of this
-conflict~\cite{wang2024regulator,li2025switches}. This report builds a minimal
-computational testbed for the idea and asks three questions:
+conflict~\cite{wang2024regulator,li2025switches}.
+
+\paragraph{Related work.}
+Thermal abuse of single cells is commonly modelled by coupling heat conduction to
+Arrhenius kinetics for a set of decomposition reactions, an approach established for
+cylindrical and prismatic cells~\cite{hatchard2001}, applied to abuse behaviour of
+high-power cells~\cite{spotnitz2003}, extended to three dimensions~\cite{kim2007abuse}
+and combined with experiments~\cite{lopez2015abuse}. Propagation models extend this
+to packs and modules, with lumped~\cite{feng2015propagation} and three-dimensional
+descriptions~\cite{feng2016module} and analyses of the heat-transfer paths between
+cells~\cite{tang2020propagation}. On the mitigation side, studies have examined
+phase-change composites~\cite{wilke2017pcm}, aerogel-based
+insulation~\cite{wong2024aerogel}, model-based optimisation of heat-absorbing
+interstitial barriers~\cite{menz2023barriers} and polymer barrier
+materials~\cite{li2026polymer}. These barriers are static: their conductivity does not
+respond to the operating state. Thermal switches, devices whose conductance changes
+with temperature or another stimulus, are reviewed in general
+in~\cite{wehmeyer2017switches} and for batteries in~\cite{li2025switches}, and a
+temperature-responsive regulator for battery modules has been demonstrated
+experimentally~\cite{wang2024regulator}.
+
+This report complements that work with a deliberately minimal model that isolates the
+conductivity-switching function of a barrier. It maps which switch properties are
+needed for containment without penalising normal operation. It asks three
+questions:
 
 \begin{enumerate}
   \item Does an idealised switchable barrier deliver both the conductor's normal-use
@@ -107,7 +133,8 @@ $k\,\partial T/\partial x = h\,(T_\infty - T)$ at $x = L_\mathrm{stack}$.
 \subsection{Cell self-heating}
 
 Each cell node carries a lumped reaction progress $\alpha \in [0,1]$ governed by
-single-step kinetics,
+single-step kinetics, a simplification of the multi-reaction schemes used in detailed
+abuse models~\cite{hatchard2001,spotnitz2003,kim2007abuse},
 \begin{equation}
   \frac{\dd\alpha}{\dd t} = k_\mathrm{eff}(T)\,(1-\alpha), \qquad
   q_\mathrm{rxn} = \Delta H_v \frac{\dd\alpha}{\dd t}, \qquad
@@ -244,7 +271,7 @@ The test suite runs automatically on every commit and checks the following.
         single cell, the peak matches $T_\infty + qL_c/2h + qL_c^2/8k$.
   \item \textbf{Reaction.} A single adiabatic reacting node ends at exactly
         $T_0 + \Delta T_\mathrm{ad}$. Its time to 50\,\% conversion matches a tight-tolerance
-        implicit ODE solution (Radau) to within 1\,\%, with and without the rate ceiling.
+        implicit ODE solution (Radau IIA~\cite{hairer1996}) to within 1\,\%, with and without the rate ceiling.
   \item \textbf{Convergence.} The cell-2 propagation time converges under mesh refinement
         with an observed order above 1.5, and under refinement of
         $\Delta T_\mathrm{rxn,max}$ (Fig.~\ref{fig:conv}).
@@ -401,9 +428,10 @@ The model is deliberately minimal, and several simplifications bound what it can
   \item \textbf{Lumped kinetics.} One Arrhenius step with a rate ceiling captures onset
         and total heat release, but not the sequence of real decomposition reactions
         (SEI breakdown, anode--electrolyte, cathode decomposition, electrolyte
-        combustion, internal short).
+        combustion, internal short)~\cite{feng2018review,kim2007abuse}.
   \item \textbf{Missing transport.} Venting, ejecta, gas flow and flames, which often carry
-        much of the energy in real propagation events, are not modelled, and neither are
+        much of the energy in real failures~\cite{wang2012fire}, are
+        not modelled, and neither are
         radiation across gaps or contact resistance.
   \item \textbf{An idealised switch.} Switching is instantaneous, reversible and free of
         hysteresis, degradation and latent heat.
@@ -434,6 +462,14 @@ a converged answer.
 The model, tests and scripts that regenerate every figure and number in this report are
 available at
 \url{https://github.com/adityameenak/switchable-barrier-runaway} under the MIT license.
+The solver is written in Python using NumPy~\cite{harris2020numpy} and
+SciPy~\cite{virtanen2020scipy}.
+
+\paragraph{Acknowledgements.}
+% Disclosure of AI assistance (recommended by arXiv policy); edit to describe your own role.
+The simulation code and manuscript were developed with assistance from an AI model
+(Claude, Anthropic). The author reviewed the code, verified the results and takes full
+responsibility for the content.
 
 \bibliographystyle{unsrt}
 \bibliography{refs}
