@@ -99,3 +99,70 @@ def switch_temperature_sweep(
     out = _pmap(_tsw_point, stacks, workers)
     peak, n = (np.array(v) for v in zip(*out))
     return SwitchSweep(np.asarray(T_sw_C), peak, n.astype(int))
+
+
+# ---------------------------------------------------------------------------
+# Real-material comparison (sourced data in ``candidates.py``)
+# ---------------------------------------------------------------------------
+
+# Thicknesses scanned for each candidate [mm].
+MATERIAL_THICKNESS_MM = np.round(np.arange(0.5, 10.0 + 1e-9, 0.25), 2)
+
+
+@dataclass
+class MaterialSweep:
+    key: str
+    thickness_mm: np.ndarray
+    n_propagated: np.ndarray
+    normal_peak_C: np.ndarray
+
+    @property
+    def min_containing_mm(self) -> float | None:
+        """Thinnest barrier that keeps runaway to the trigger cell (None = never)."""
+        ok = self.n_propagated == 1
+        return float(self.thickness_mm[ok][0]) if ok.any() else None
+
+    @property
+    def peak_at_min_C(self) -> float | None:
+        ok = self.n_propagated == 1
+        return float(self.normal_peak_C[ok][0]) if ok.any() else None
+
+
+def _material_point(args) -> tuple[int, float]:
+    key, L_mm, overrides, base = args
+    from .candidates import to_barrier
+
+    stack = replace(base, barrier=to_barrier(key, L_mm * 1e-3, **overrides))
+    return _n_propagated(stack), solve_normal_operation(stack).peak_C
+
+
+def material_sweep(
+    key: str,
+    thickness_mm: np.ndarray = MATERIAL_THICKNESS_MM,
+    base: StackParams | None = None,
+    workers: int | None = None,
+    **overrides,
+) -> MaterialSweep:
+    """Containment and normal-operation peak vs. thickness for one candidate.
+
+    ``overrides`` are passed to ``candidates.to_barrier`` (sensitivity runs).
+    """
+    base = base or StackParams()
+    out = _pmap(_material_point, [(key, float(L), overrides, base) for L in thickness_mm], workers)
+    n, peak = (np.array(v) for v in zip(*out))
+    return MaterialSweep(key, np.asarray(thickness_mm), n.astype(int), peak)
+
+
+# Sensitivity cases: (label, candidate, overrides). Each changes one input the
+# sourced data leave open, by a plausible amount.
+MATERIAL_SENSITIVITY = [
+    ("switch: T_sw = 70 C", "graphene_switch", {"T_sw_C": 70.0}),
+    ("switch: T_sw = 100 C", "graphene_switch", {"T_sw_C": 100.0}),
+    ("switch: instant (tau = 0)", "graphene_switch", {"switch_tau": 0.0}),
+    ("switch: slow (tau = 30 s)", "graphene_switch", {"switch_tau": 30.0}),
+    ("switch: reversible", "graphene_switch", {"switch_irreversible": False}),
+    ("switch: rho cp x2", "graphene_switch", {"rho": 2000.0}),
+    ("switch: k_off x1.5", "graphene_switch", {"k_off": 0.15}),
+    ("aerogel: rho cp x0.7", "aerogel", {"cp": 700.0}),
+    ("PCM: no latent heat", "pcm_eg", {"latent_heat": 0.0}),
+]

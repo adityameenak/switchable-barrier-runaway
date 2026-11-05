@@ -1,0 +1,28 @@
+Real-material comparison (python paper/make_figures.py)
+
+ideal-conductor normal peak: 38.0 C
+
+material           min L [mm]  peak [C]   cells at 2 mm   peak at 2 mm
+graphene_switch           3.5      38.9               5         38.4
+aerogel                  2.25      79.4               5         74.9
+ceramic_fibre            4.25      66.1               5         51.1
+mica                     6.25      48.7               5         41.3
+pcm_eg                  never         -               5         37.9
+                   cells in runaway vs thickness: 0.5 mm: 5, 1.5 mm: 5, 2.5 mm: 5, 3.5 mm: 5, 4.5 mm: 5, 5.5 mm: 5, 6.5 mm: 5, 7.5 mm: 5, 8.5 mm: 5, 9.5 mm: 2
+gap_pad                 never         -               5         38.1
+                   cells in runaway vs thickness: 0.5 mm: 5, 1.5 mm: 5, 2.5 mm: 5, 3.5 mm: 5, 4.5 mm: 5, 5.5 mm: 5, 6.5 mm: 5, 7.5 mm: 5, 8.5 mm: 5, 9.5 mm: 5
+
+sensitivity (thinnest containing barrier; normal peak there)
+  switch: T_sw = 70 C            3.75 mm  38.9 C
+  switch: T_sw = 100 C            3.5 mm  38.9 C
+  switch: instant (tau = 0)      3.25 mm  38.8 C
+  switch: slow (tau = 30 s)       4.5 mm  39.2 C
+  switch: reversible              3.5 mm  38.9 C
+  switch: rho cp x2              3.25 mm  38.8 C
+  switch: k_off x1.5                5 mm  39.3 C
+  aerogel: rho cp x0.7           2.25 mm  79.4 C
+  PCM: no latent heat              never  
+
+PCM latent-heat effect, 4 mm barrier, cell propagation times [s]
+  with latent heat       3  27  68  108  148
+  latent heat removed    2  22  48  74  100

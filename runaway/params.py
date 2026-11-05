@@ -105,13 +105,39 @@ class BarrierParams:
     rho: float = 1000.0  # [kg/m^3]  TODO: measured barrier density
     cp: float = 1000.0  # [J/(kg K)] TODO: measured barrier heat capacity
 
+    # --- Extensions for real materials (defaults reproduce the ideal designs) ---
+    # Tabulated through-plane conductivity, ((T [C], k [W/(m K)]), ...).
+    # ln k is interpolated linearly in T and held constant beyond the ends.
+    # When set, it replaces k_on / k_off and the switch law.
+    k_table: tuple[tuple[float, float], ...] | None = None
+    # Latent heat of a phase change inside the barrier [J/kg], released over a
+    # Gaussian melting range centred on T_melt_C with standard deviation
+    # melt_width [K] (apparent-heat-capacity / enthalpy formulation).
+    latent_heat: float = 0.0
+    T_melt_C: float = 0.0
+    melt_width: float = 3.0
+    # Switch dynamics: the conducting fraction relaxes toward its equilibrium
+    # value with time constant switch_tau [s] (0 = instantaneous). A one-way
+    # switch (switch_irreversible) can only move toward the insulating state.
+    switch_tau: float = 0.0
+    switch_irreversible: bool = False
+
     @property
     def rho_cp(self) -> float:
         return self.rho * self.cp
 
     @property
     def is_switchable(self) -> bool:
-        return self.k_on != self.k_off
+        return self.k_table is None and self.k_on != self.k_off
+
+    @property
+    def has_switch_state(self) -> bool:
+        """True if k depends on switch history, not just the current T."""
+        return self.is_switchable and (self.switch_tau > 0.0 or self.switch_irreversible)
+
+    @property
+    def has_latent_heat(self) -> bool:
+        return self.latent_heat > 0.0
 
 
 @dataclass(frozen=True)

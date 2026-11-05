@@ -33,8 +33,12 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.linalg import solve_banded
 
-from .materials import Grid, build_grid
+from .materials import Grid, build_grid, switch_fraction
 from .params import KELVIN, SimParams, StackParams
+
+# Latent heat: chord-capacity iterations per step and their tolerance [K].
+MAX_LATENT_ITERS = 60
+LATENT_TOL = 1e-7
 
 # ---------------------------------------------------------------------------
 # Spatial operator
@@ -73,12 +77,14 @@ def diffusion_step(
     h: float,
     T_amb: float | tuple[float, float],
     q_vol: np.ndarray | float = 0.0,
+    rho_cp: np.ndarray | None = None,
 ) -> tuple[np.ndarray, float]:
     """One backward-Euler conduction step with fixed conductivity ``k``.
 
     Solves  (m + K) T_new = m T + q dx + boundary terms,  m = rho cp dx / dt.
 
-    ``T_amb`` may be a (left, right) pair. ``dt = inf`` drops the storage
+    ``rho_cp`` overrides the grid's volumetric heat capacity (used for the
+    latent-heat chord capacity). ``T_amb`` may be a (left, right) pair. ``dt = inf`` drops the storage
     term and returns the steady-state solution for the given k.
 
     Returns the new temperature field and the energy that left through the
@@ -86,7 +92,7 @@ def diffusion_step(
     """
     T_left, T_right = (T_amb, T_amb) if np.isscalar(T_amb) else T_amb
     G, G_left, G_right = face_conductances(grid, k, h)
-    m = grid.rho_cp * grid.dx / dt
+    m = (grid.rho_cp if rho_cp is None else rho_cp) * grid.dx / dt
 
     # Banded storage for solve_banded with one sub- and one super-diagonal:
     # row 0 = super-diagonal, row 1 = diagonal, row 2 = sub-diagonal.
@@ -234,12 +240,17 @@ def run_transient(
     T = np.asarray(T0_K, dtype=float).copy()
     alpha = np.asarray(alpha0, dtype=float).copy()
     cells = grid.is_cell
+    barrier = stack.barrier
+    latent = barrier.has_latent_heat
+    # Switch with its own state: conducting fraction on the barrier nodes,
+    # starting in equilibrium with the initial temperature.
+    s_sw = switch_fraction(T[~cells], barrier) if barrier.has_switch_state else None
 
     # Energy bookkeeping (per unit area, relative to ambient):
     #   E = sum rho cp (T - T_amb) dx  +  sum dH (1 - alpha) dx
     # dE/dt = generation - boundary loss  =>  residual should stay ~0.
     def energy(T, alpha):
-        thermal = np.sum(grid.rho_cp * (T - T_amb) * grid.dx)
+        thermal = np.sum(grid.enthalpy(T, T_amb) * grid.dx)
         chemical = np.sum(dH * (1.0 - alpha[cells]) * grid.dx[cells]) if react else 0.0
         return thermal + chemical
 
@@ -276,12 +287,28 @@ def run_transient(
         if react:
             T, alpha = reaction_step(grid, T, alpha, dt)
 
-        # 2) conduction (backward Euler, k lagged; optional Picard refinement)
+        # 2) conduction (backward Euler, k lagged; optional Picard refinement).
+        # With latent heat, iterate the chord heat capacity to convergence so
+        # the step conserves enthalpy exactly.
         T_iter = T
-        for _ in range(max(1, sim.picard_iters)):
-            k = grid.conductivity(T_iter)
-            T_iter, loss = diffusion_step(grid, T, dt, k, h, T_amb, q_vol)
+        for _ in range(MAX_LATENT_ITERS if latent else max(1, sim.picard_iters)):
+            k = grid.conductivity(T_iter, s_sw)
+            cap = grid.secant_capacity(T, T_iter) if latent else None
+            T_next, loss = diffusion_step(grid, T, dt, k, h, T_amb, q_vol, cap)
+            done = latent and np.abs(T_next - T_iter).max() < LATENT_TOL
+            T_iter = T_next
+            if done:
+                break
         T = T_iter
+
+        # 3) switch state relaxes toward equilibrium (one-way if irreversible)
+        if s_sw is not None:
+            s_eq = switch_fraction(T[~cells], barrier)
+            if barrier.switch_tau > 0.0:
+                s_new = s_sw + (s_eq - s_sw) * (1.0 - np.exp(-dt / barrier.switch_tau))
+            else:
+                s_new = s_eq
+            s_sw = np.minimum(s_sw, s_new) if barrier.switch_irreversible else s_new
         lost += loss
         generated += dt * np.sum(q_vol * grid.dx)
 
@@ -311,6 +338,7 @@ def run_transient(
         energy_residual=np.array(res_hist),
         energy_scale=energy_scale,
         n_steps=n_steps,
+        meta={} if s_sw is None else {"s_switch": s_sw},
     )
 
 

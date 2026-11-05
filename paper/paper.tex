@@ -47,7 +47,7 @@
 \large A one-dimensional finite-volume study}
 \author{Aditya Meenakshisundaram\\[4pt]
 \small\texttt{github.com/adityameenak/switchable-barrier-runaway}}
-\date{October 2026}
+\date{November 2026}
 
 \begin{document}
 \maketitle
@@ -71,8 +71,17 @@ window of about 38--175\,$^\circ$C in which the switch both cools and protects. 
 solver conserves energy to round-off and is verified against analytical, ODE-solver and
 convergence tests. The convergence study also showed that onset-fitted Arrhenius
 kinetics, extrapolated to burning-cell temperatures, produce a reaction front too thin
-for any practical mesh to resolve; a rate ceiling restores mesh convergence. All
-parameters are order-of-magnitude placeholders, so the conclusions are qualitative.
+for any practical mesh to resolve; a rate ceiling restores mesh convergence. The model
+is then extended with tabulated $k(T)$, latent heat and a delayed, one-way switch, and six
+real barrier materials are compared using datasheet and literature properties. Static
+insulators either contain runaway only with a large normal-use penalty (silica aerogel,
+79\,$^\circ$C at its 2.25\,mm containment thickness; ceramic fibre, 66\,$^\circ$C at
+4.25\,mm) or need thick layers (mica, 6.25\,mm), and a conductive gap pad and a
+paraffin/graphite phase-change composite do not contain it at any thickness up to
+10\,mm. A published graphene/microsphere thermal switch contains runaway at 3.5\,mm while
+keeping the normal-use peak within 1\,K of the ideal conductor, and is the best of the six
+under every sensitivity case tested. Cell and kinetic parameters remain order-of-magnitude
+placeholders, so the conclusions are qualitative.
 \end{abstract}
 
 % =====================================================================
@@ -123,10 +132,13 @@ needed for containment without penalising normal operation. It asks three questi
         temperature and the insulator's containment?
   \item What hot-state conductivity and thickness does it need?
   \item How should its switch temperature be chosen?
+  \item Which of six real barrier materials, with properties taken from datasheets and
+        the literature, best balances containment against normal-use temperature?
 \end{enumerate}
 The emphasis is on a transparent, verified model rather than quantitative prediction.
-Every material and kinetic parameter is an illustrative, order-of-magnitude value and
-has not been fitted to any particular cell or barrier.
+The cell and kinetic parameters are illustrative, order-of-magnitude values and have
+not been fitted to any particular cell. The barrier properties in the material comparison
+(Section~\ref{sec:materials}) are sourced, with every assumed value flagged.
 
 % =====================================================================
 \section{Model}
@@ -192,6 +204,73 @@ $k$ matters for a 100$\times$ switch ratio. A linear blend leaves $k$ several ti
 $\koff$ until about 20\,K above $\Tsw$, so the barrier would barely insulate near its
 nominal switch point. All barriers share the same volumetric heat capacity, which
 isolates the effect of conductivity.
+
+\subsection{Real barrier materials}
+\label{sec:materials-model}
+
+Comparing real materials needs three extensions of the barrier model. Each reduces to the
+idealised designs when switched off, and all earlier results are unchanged.
+\begin{itemize}
+  \item \textbf{Tabulated conductivity.} $k(T)$ is interpolated from published points,
+        linearly in $\ln k$, and held constant beyond the first and last point.
+  \item \textbf{Latent heat.} A phase-change barrier stores enthalpy
+        \begin{equation}
+          H(T) = \rho c_p (T - T_\mathrm{ref}) + \rho L\,\Phi\!\left(\frac{T - T_m}{\sigma_m}\right),
+          \label{eq:enthalpy}
+        \end{equation}
+        with latent heat $L$ released over a Gaussian melting range ($\Phi$ is the normal
+        cumulative distribution, $\sigma_m = 3$\,K).
+  \item \textbf{Switch dynamics.} The conducting fraction $s$ of a switch (the exponent
+        in Eq.~\eqref{eq:switch}) relaxes toward its equilibrium value $s_\mathrm{eq}(T)$
+        with time constant $\tau$, $\dd s/\dd t = (s_\mathrm{eq} - s)/\tau$. A one-way
+        switch can only move toward the insulating state, $s^{n+1} = \min(s^n, \cdot)$.
+\end{itemize}
+Six candidates were chosen to cover the main barrier mechanisms
+(Table~\ref{tab:materials}): three static insulators (silica aerogel blanket, phlogopite
+mica paper, alumina--silica ceramic fibre), a static conductor (silicone gap pad), a
+phase-change composite (paraffin with 10\,wt\% expanded graphite) and a thermal switch
+(the graphene/expandable-microsphere regulator of Wang et al.~\cite{wang2024regulator}).
+Every value is taken from a manufacturer datasheet or a peer-reviewed paper, except
+where marked as assumed. The data and their provenance are kept in
+\texttt{runaway/candidates.py}, which also records how each material is mapped onto the
+model.
+
+\begin{table}[!htbp]
+  \centering\small
+  \caption{Barrier candidates. $k$ is through-plane, at the temperatures shown.
+  $^a$Assumed generic value for the material class (not in the source).
+  $^b$From a search summary of the source, not yet checked against the original.}
+  \label{tab:materials}
+  \begin{tabularx}{\linewidth}{@{}lXccl@{}}
+    \toprule
+    Material (source) & $k$ [W\,m$^{-1}$K$^{-1}$] at $T$ [$^\circ$C] & $\rho$ [kg\,m$^{-3}$]
+      & $c_p$ [J\,kg$^{-1}$K$^{-1}$] & Other \\
+    \midrule
+    Silica aerogel~\cite{aspen2022pyrogel} & 0.020 @ 0, 0.028 @ 200, 0.046 @ 400,
+      0.089 @ 600 & 200 & 1000$^a$ & max.\ 650\,$^\circ$C \\
+    Mica paper~\cite{gund2026mica} & 0.23 @ 50 & 1900 & 850$^a$ & max.\ 700\,$^\circ$C \\
+    Ceramic fibre~\cite{morgan2016rcf} & 0.06 @ 260, 0.13 @ 538, 0.23 @ 816 & 128 & 1000$^a$
+      & max.\ 1177\,$^\circ$C \\
+    Silicone gap pad~\cite{henkel2026tgp3000} & 3.0$^b$ @ 25 & 3200$^b$ & 1000$^b$
+      & max.\ 200\,$^\circ$C$^b$ \\
+    Paraffin/EG PCM~\cite{zhao2025pweg} & 9.99 @ 25$^a$ & 1103 & 2000$^a$
+      & $L = 240$\,kJ\,kg$^{-1}$, $T_m \approx 74\,^\circ$C \\
+    Graphene switch~\cite{wang2024regulator} & 1.33 @ 25, 0.10 @ $\sim$100 & 1000$^a$
+      & 1000$^a$ & switches within 30\,s \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Where the data do not determine a model input, the choice is stated and later varied
+(Table~\ref{tab:sens}). The graphene switch is modelled with $\kon = 1.33$,
+$\koff = 0.10$\,W\,m$^{-1}$K$^{-1}$, $\Tsw = 85\,^\circ$C and $w = 5$\,K, so that $k$
+reaches about 0.11\,W\,m$^{-1}$K$^{-1}$ at 100\,$^\circ$C, and its 30\,s response as a lag
+with $\tau = 10$\,s. Expanding microspheres suggest a one-way switch, which is the
+default. The gap pad and the PCM are given constant $k$. Several of these products are
+not made for battery barriers: the aerogel and ceramic fibre data are for industrial
+blankets, and the PCM was developed for spacecraft electronics. The gap pad is rated only
+to 200\,$^\circ$C and the PCM was tested only to 85\,$^\circ$C, so their behaviour at
+runaway temperatures is an extrapolation.
 
 \subsection{Scenarios and parameters}
 
@@ -279,10 +358,19 @@ backward-Euler steps from ambient with a geometrically growing step. For the swi
 barrier this follows the physical start-up path, so if self-heating trips the switch,
 the solution lands on the hot (insulating) branch.
 
-\paragraph{Energy accounting.} The solver tracks stored thermal energy, unreleased
-chemical energy and cumulative boundary loss. Because both sub-steps are conservative,
-the discrete energy balance closes to round-off. The largest relative residual in any
-run reported here is $5\times10^{-12}$.
+\paragraph{Latent heat.} With a phase-change barrier, the heat capacity in the
+backward-Euler step is replaced by the chord capacity
+$C^\ast = [H(T^{n+1}) - H(T^n)]/(T^{n+1} - T^n)$ from Eq.~\eqref{eq:enthalpy}, and the
+step is iterated to a tolerance of $10^{-7}$\,K. The stored-energy change then equals the
+enthalpy change exactly, so a node that crosses the whole melting range in one step
+cannot skip the latent heat, which an apparent-heat-capacity method evaluated at the old
+temperature would do.
+
+\paragraph{Energy accounting.} The solver tracks stored enthalpy, unreleased chemical
+energy and cumulative boundary loss. Because both sub-steps are conservative, the
+discrete energy balance closes to round-off. The largest relative residual in any run
+reported here is $3\times10^{-10}$ (a phase-change barrier, set by the iteration
+tolerance); without latent heat it is below $10^{-11}$.
 
 % =====================================================================
 \section{Verification}
@@ -306,6 +394,11 @@ The test suite runs automatically on every commit and checks the following.
   \item \textbf{Convergence.} The cell-2 propagation time converges under mesh
         refinement with an observed order above 1.5, and under refinement of
         $\Delta T_\mathrm{rxn,max}$ (Fig.~\ref{fig:conv}).
+  \item \textbf{Material extensions.} Tabulated $k(T)$ reproduces the published points.
+        In an insulated stack with a phase-change barrier, enthalpy is conserved to
+        $10^{-9}$ and the final uniform temperature satisfies the enthalpy balance
+        including melting. A one-way switch heated past $\Tsw$ stays insulating after
+        cooling, while a reversible one recovers, and a larger $\tau$ delays switching.
 \end{enumerate}
 
 \subsection{Why a rate ceiling is needed}
@@ -409,6 +502,7 @@ only part of the switchable barrier's thickness is in the insulating state.
 \end{figure}
 
 \subsection{Design map}
+\label{sec:results-map}
 
 Figure~\ref{fig:map} varies the switchable barrier's thickness $L$ (0.5--5\,mm) and
 hot-state conductivity $\koff$ (0.02--1\,W\,m$^{-1}$K$^{-1}$) over 361 simulations. Two
@@ -447,6 +541,121 @@ temperature plus a few switch widths; the upper edge is set by the kinetics.
   \label{fig:tsw}
 \end{figure}
 
+\subsection{Real barrier materials}
+\label{sec:materials}
+
+Each candidate in Table~\ref{tab:materials} was run at thicknesses from 0.5 to 10\,mm in
+0.25\,mm steps, in both the abuse and the normal-operation scenario. Two numbers summarise
+a material: the thinnest barrier that confines runaway to the trigger cell, and the
+normal-operation peak temperature at that thickness (Fig.~\ref{fig:materials},
+Table~\ref{tab:matresults}).
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\linewidth]{fig_materials.png}
+  \caption{Real barrier materials. (a)~Normal-operation peak temperature against barrier
+  thickness; the line is solid where the barrier contains runaway and dashed where it
+  propagates, and the marker shows the thinnest containing barrier. (b)~Each material's
+  thinnest containing barrier and its normal-operation peak at that thickness. The lower
+  left is better. The dotted line is the ideal 5\,W\,m$^{-1}$K$^{-1}$ conductor at
+  2\,mm.}
+  \label{fig:materials}
+\end{figure}
+
+\begin{table}[!htbp]
+  \centering\small
+  \caption{Material comparison. ``Never'' means runaway reached at least one neighbour at
+  every thickness up to 10\,mm. At 2\,mm all six let runaway reach all five cells.}
+  \label{tab:matresults}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Material & Thinnest containing & Normal peak there & Normal peak at 2\,mm \\
+             & barrier [mm] & [$^\circ$C] & [$^\circ$C] \\
+    \midrule
+    Graphene switch  & 3.5   & 38.9 & 38.4 \\
+    Silica aerogel   & 2.25  & 79.4 & 74.9 \\
+    Ceramic fibre    & 4.25  & 66.1 & 51.1 \\
+    Mica paper       & 6.25  & 48.7 & 41.3 \\
+    Paraffin/EG PCM  & never & --   & 37.9 \\
+    Silicone gap pad & never & --   & 38.1 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{No candidate contains runaway at 2\,mm.} Even the aerogel, whose room-temperature
+$k$ is below that of the idealised insulator, lets runaway through at 2\,mm. Its
+conductivity triples between 200 and 600\,$^\circ$C, the range the barrier's hot face
+reaches, so its effective hot-state conductance at 2\,mm is about 40\,W\,m$^{-2}$K$^{-1}$,
+above the containment threshold of Section~\ref{sec:results-map}. What matters for
+containment is a barrier's conductivity at runaway temperatures, which datasheets often
+report only incompletely.
+
+\paragraph{Static insulators trade thickness against normal-use temperature.} Aerogel
+contains runaway with the thinnest layer, 2.25\,mm, but raises the normal-operation peak by
+41\,K over the conductor. Ceramic fibre needs 4.25\,mm and costs 28\,K. Mica paper conducts
+heat about ten times better than aerogel, so its normal-use penalty is small (11\,K), but
+it needs 6.25\,mm before its conductance falls below the threshold. For all three the
+penalty grows steadily with thickness (Fig.~\ref{fig:materials}a).
+
+\paragraph{The conductor and the phase-change composite fail.} The gap pad behaves like the
+idealised conductor and never contains runaway. The PCM also conducts well
+($k \approx 10$\,W\,m$^{-1}$K$^{-1}$), so it keeps cells cool, and its latent heat does
+slow propagation: at 4\,mm, runaway reaches cell~5 after 148\,s instead of 100\,s without
+latent heat. But a 4\,mm layer stores only about 1\,MJ\,m$^{-2}$ of latent heat, against
+about 15\,MJ\,m$^{-2}$ of reaction heat released by each cell, and once melted it passes
+heat on readily. Only at 9.5--10\,mm does it hold runaway to two cells.
+
+\paragraph{The thermal switch avoids the trade-off.} The graphene switch contains runaway at
+3.5\,mm while keeping the normal-operation peak at 38.9\,$^\circ$C, within 1\,K of the ideal
+conductor. Its hot-state conductance at that thickness,
+$0.10/0.0035 \approx 29$\,W\,m$^{-2}$K$^{-1}$, is just below the threshold found with the
+idealised switch, so the design-map criterion carries over to a real material. Because
+its cold-state conductivity is only 1.33\,W\,m$^{-1}$K$^{-1}$, the normal-use penalty does
+grow with thickness, but slowly (41\,$^\circ$C at 10\,mm).
+
+\paragraph{Sensitivity.} The switch data come from a paper abstract, so its density, heat
+capacity, switch temperature and response time are uncertain. Table~\ref{tab:sens} varies
+each one. Across these cases the thinnest containing switch ranges from 3.25 to 5\,mm,
+with the normal-operation peak between 38.8 and 39.3\,$^\circ$C. The result is most
+sensitive to the hot-state conductivity, as the $\koff/L$ criterion predicts, and to a
+slow response: with $\tau = 30$\,s the switch needs 4.5\,mm. Reversibility makes no
+difference here, because the barrier next to the runaway cell does not cool below $\Tsw$
+during the run. Doubling the switch's assumed heat capacity, or cutting the aerogel's by
+30\,\%, changes its thinnest containing barrier by at most 0.25\,mm.
+
+\begin{table}[!htbp]
+  \centering\small
+  \caption{Sensitivity of the thinnest containing barrier to inputs the data do not pin
+  down. Baseline: graphene switch 3.5\,mm, aerogel 2.25\,mm.}
+  \label{tab:sens}
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    Case & Thinnest containing [mm] & Normal peak there [$^\circ$C] \\
+    \midrule
+    Switch, $\Tsw = 70\,^\circ$C        & 3.75 & 38.9 \\
+    Switch, $\Tsw = 100\,^\circ$C       & 3.5  & 38.9 \\
+    Switch, instantaneous ($\tau = 0$)  & 3.25 & 38.8 \\
+    Switch, slow ($\tau = 30$\,s)       & 4.5  & 39.2 \\
+    Switch, reversible                  & 3.5  & 38.9 \\
+    Switch, $\rho c_p \times 2$         & 3.25 & 38.8 \\
+    Switch, $\koff \times 1.5$          & 5.0  & 39.3 \\
+    Aerogel, $\rho c_p \times 0.7$      & 2.25 & 79.4 \\
+    PCM without latent heat             & never & -- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Which material is best?} Judged on both criteria together, the graphene switch is
+the best of the six. It is the only candidate that contains runaway at a practical
+thickness without a normal-use penalty, and it stays the best in every sensitivity case.
+Aerogel is the choice if thickness is the only constraint and the pack can remove the
+extra heat another way, for example with side cooling, which this 1D model cannot
+represent. Among commercially established products, mica paper is the best compromise if
+about 6\,mm per gap and a normal-use peak near 49\,$^\circ$C are acceptable. The switch
+result rests on a laboratory material characterised here only by its published headline
+numbers, so measured $k(T)$, heat capacity and cycling data are needed before it can be
+recommended for a real pack.
+
 % =====================================================================
 \section{Discussion and limitations}
 
@@ -465,16 +674,25 @@ The model is deliberately minimal, and several simplifications bound what it can
   \item \textbf{Missing transport.} Venting, ejecta, gas flow and flames, which often
         carry much of the energy in real failures~\cite{wang2012fire}, are not modelled,
         and neither are radiation across gaps or contact resistance.
-  \item \textbf{An idealised switch.} Switching is instantaneous, reversible and free of
-        hysteresis, degradation and latent heat.
-  \item \textbf{Illustrative parameters.} No value is fitted to data, so temperatures
-        and times are qualitative.
+  \item \textbf{Simplified switching.} The idealised switch is instantaneous and
+        reversible. The real-material model adds a response time and one-way switching,
+        but not hysteresis, degradation over cycles or latent heat of the switch itself.
+  \item \textbf{Incomplete material data.} Several heat capacities are assumed, the gap
+        pad and PCM are extrapolated far beyond their rated temperatures, the aerogel
+        and ceramic fibre data are for industrial blankets rather than battery sheets,
+        and the switch is described by two published points. Decomposition, melting
+        leakage and combustion of organic barriers are not modelled.
+  \item \textbf{Illustrative cell parameters.} The cell and kinetic values are not fitted
+        to data, so temperatures and times are qualitative. The material ranking is more
+        robust than the absolute thicknesses, which scale with the end cooling $h$.
 \end{itemize}
-Natural next steps are to fit $k(T)$ to measured data for a real switchable material,
-including hysteresis; to fit multi-step kinetics to accelerating-rate calorimetry and
-calibrate $\kmax$ against measured runaway duration; to extend the model to 2D or 3D
-with lateral cooling; to compare against an independent commercial finite-element
-model; and to quantify how parameter uncertainty moves the containment boundary.
+Natural next steps are to measure $k(T)$ up to runaway temperatures for the leading
+candidates, especially the thermal switch, including hysteresis and cycling; to fit
+multi-step kinetics to accelerating-rate calorimetry and calibrate $\kmax$ against measured
+runaway duration; to extend the model to 2D or 3D with lateral cooling, which would reduce
+the normal-use penalty of insulators; to compare against an independent commercial
+finite-element model; and to quantify how parameter uncertainty moves the containment
+boundary.
 
 % =====================================================================
 \section{Conclusions}
@@ -488,6 +706,15 @@ side, mesh-convergence testing exposed a modelling error that a single run would
 onset-fitted Arrhenius kinetics extrapolated to burning temperatures make propagation
 times mesh-dependent, and a physically motivated rate ceiling is needed for a converged
 answer.
+
+Applied to six real barrier materials, the model shows that the conflict is real for
+static materials. Insulators that contain runaway either raise normal-use temperatures
+by 28--41\,K (aerogel, ceramic fibre) or need a 6\,mm layer (mica), and a conductive pad
+or phase-change composite does not contain runaway at all. A published graphene/microsphere
+thermal switch is the best candidate: it contains runaway at about 3.5\,mm with a
+normal-use temperature within 1\,K of an ideal conductor, a result that holds across all
+sensitivity cases. Its standing depends on measured high-temperature properties that are
+not yet available.
 
 \paragraph{Code and data availability.}
 The model, tests and scripts that regenerate every figure and number in this report are
