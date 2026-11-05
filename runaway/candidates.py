@@ -80,6 +80,42 @@ SOURCES: dict[str, Source] = {
             "doi:10.1038/s41560-024-01535-5. Values from the abstract only.",
             "https://www.nature.com/articles/s41560-024-01535-5",
         ),
+        # --- composite constituents (see composites.py) ---
+        Source("nan1997", "C.-W. Nan, R. Birringer, D. R. Clarke, H. Gleiter, Effective thermal "
+               "conductivity of particulate composites with interfacial thermal resistance, "
+               "J. Appl. Phys. 81, 6692-6699 (1997). doi:10.1063/1.365209.",
+               "https://doi.org/10.1063/1.365209"),
+        Source("huxtable2003", "S. T. Huxtable et al., Interfacial heat flow in carbon nanotube "
+               "suspensions, Nature Materials 2, 731-734 (2003). doi:10.1038/nmat996. "
+               "Interface conductance ~12 MW/(m^2 K).", "https://doi.org/10.1038/nmat996"),
+        Source("kim2001", "P. Kim, L. Shi, A. Majumdar, P. L. McEuen, Thermal transport measurements "
+               "of individual multiwalled nanotubes, Phys. Rev. Lett. 87, 215502 (2001). "
+               "doi:10.1103/PhysRevLett.87.215502.", "https://arxiv.org/abs/cond-mat/0106578"),
+        Source("agnw_nsf", "Single silver nanowire, 84 nm hydraulic diameter: 332 W/(m K) at 300 K "
+               "(NSF Public Access Repository 10280473; values from a search summary).",
+               "https://par.nsf.gov/servlets/purl/10280473"),
+        Source("huang2018", "C. Huang, X. Qian, R. Yang, Thermal conductivity of polymers and polymer "
+               "nanocomposites, arXiv:1805.05561 (2018); h-BN values from a search summary.",
+               "https://arxiv.org/abs/1805.05561"),
+        Source("hydroxides", "Elsevier ScienceDirect topic overviews, Aluminum hydroxide / Magnesium "
+               "hydroxide (decomposition enthalpy and onset; values from a search summary).",
+               "https://www.sciencedirect.com/topics/chemistry/magnesium-hydroxide"),
+        Source("calcite_decomp", "C. Rodriguez-Navarro et al., Thermal decomposition of calcite: "
+               "mechanisms of formation and textural evolution of CaO nanocrystals, American "
+               "Mineralogist 94, 578-593 (2009); dH ~ 177.8 kJ/mol (search summary).",
+               "https://www.ugr.es/~grupo179/pdf/CRNavarro%2009a.pdf"),
+        Source("horai1971", "K. Horai, Thermal conductivity of rock-forming minerals, J. Geophys. Res. "
+               "76, 1278-1308 (1971); calcite 3.4-3.6 W/(m K) as quoted by secondary sources.",
+               "https://doi.org/10.1029/JB076i005p01278"),
+        Source("minerals", "Mineral density tables: webmineral.com (gibbsite 2.34, brucite 2.37 g/cm^3), "
+               "SSHADE (brucite 2.39), Engineering ToolBox (calcite 2.71).",
+               "https://engineeringtoolbox.com/mineral-density-d_1555.html"),
+        Source("3m_k1", "3M Glass Bubbles K1 data sheet: true density 0.125 g/cc, calculated thermal "
+               "conductivity 0.047 W/(m K) at 21 C.",
+               "https://Aircraftspruce.Com/catalog/pdf/3MGLASS%20BUBBLES.pdf"),
+        Source("sylgard184", "Dow SYLGARD 184 silicone elastomer data sheet: specific gravity 1.03; "
+               "thermal conductivity 0.16-0.27 W/(m K) depending on the copy of the sheet.",
+               "https://neyco.fr/uploads/media/product/0001/05/Sylgard-184-dow-corning-neyco.pdf"),
     ]
 }
 

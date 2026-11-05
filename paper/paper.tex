@@ -44,7 +44,7 @@
 \newcommand{\kmax}{k_\mathrm{max}}
 
 \title{Temperature-switchable thermal barriers against\\ thermal runaway propagation\\[6pt]
-\large A one-dimensional finite-volume study}
+\large A one- and two-dimensional finite-volume study}
 \author{Aditya Meenakshisundaram\\[4pt]
 \small\texttt{github.com/adityameenak/switchable-barrier-runaway}}
 \date{November 2026}
@@ -272,6 +272,105 @@ blankets, and the PCM was developed for spacecraft electronics. The gap pad is r
 to 200\,$^\circ$C and the PCM was tested only to 85\,$^\circ$C, so their behaviour at
 runaway temperatures is an extrapolation.
 
+\subsection{Filled-silicone compositions}
+\label{sec:composites-model}
+
+Many practical barriers and gap fillers are polymers loaded with particles. To compare
+compositions rather than finished products, a silicone elastomer
+matrix~\cite{sylgard184} ($k_m = 0.20$\,W\,m$^{-1}$K$^{-1}$, $\rho = 1030$\,kg\,m$^{-3}$)
+is combined with eight fillers (Table~\ref{tab:fillers}): calcium carbonate as
+nanoparticles and microparticles, the flame-retardant hydroxides Al(OH)$_3$ (ATH) and
+Mg(OH)$_2$ (MDH), hexagonal boron nitride platelets, silver nanowires, multi-walled carbon
+nanotubes, and hollow glass microspheres.
+
+\paragraph{Effective conductivity.} The through-plane conductivity of the composite is
+estimated with the effective-medium model of Nan et al.~\cite{nan1997} for randomly
+oriented spheroidal inclusions with an interfacial (Kapitza) resistance $R_K$. For filler
+volume fractions $f_i$,
+\begin{equation}
+  \frac{k}{k_m} = \frac{3 + \sum_i f_i\,[2\beta_{11}(1-L_{11}) + \beta_{33}(1-L_{33})]}
+                       {3 - \sum_i f_i\,[2\beta_{11}L_{11} + \beta_{33}L_{33}]},\qquad
+  \beta_{jj} = \frac{k^c_{jj} - k_m}{k_m + L_{jj}(k^c_{jj} - k_m)},
+  \label{eq:nan}
+\end{equation}
+where $L_{jj}$ are the depolarisation factors of a spheroid with aspect ratio
+$p = a_3/a_1$, and $k^c_{jj} = k_{p,jj}/(1 + \gamma L_{jj} k_{p,jj}/k_m)$ is the
+particle conductivity reduced by the interface, with $\gamma = (2 + 1/p)\,a_K/a_1$ for
+rods ($p \ge 1$), $\gamma = (1 + 2p)\,a_K/a_3$ for platelets ($p \le 1$) and Kapitza
+radius $a_K = R_K k_m$. For spheres Eq.~\eqref{eq:nan} reduces to the Hasselman--Johnson
+result and, with $R_K = 0$, to Maxwell's. Particle size enters only through $a_K/a$:
+when the Kapitza radius approaches the particle size, the interface dominates, which is
+why nanoparticles conduct less than microparticles of the same material. The model
+neglects percolating filler networks, so it is used only below each shape's
+percolation range (40\,vol\% for spheres, 30\,\% for platelets, 5\,\% for wires and
+tubes). For the very high aspect ratios of nanowires and nanotubes it is an upper bound:
+contact resistance, waviness and agglomeration make measured composites conduct less.
+
+\paragraph{Endothermic fillers.} ATH, MDH and CaCO$_3$ decompose on heating, releasing
+water or CO$_2$ and absorbing heat. Each is represented with the latent-heat mechanism of
+Eq.~\eqref{eq:enthalpy}, carrying the filler's mass fraction of its decomposition
+enthalpy over a Gaussian temperature range. The gas release, and the irreversibility of
+the reaction, are not modelled. Density and heat capacity follow volume- and
+mass-weighted mixture rules.
+
+\begin{table}[!htbp]
+  \centering\small
+  \caption{Fillers. Particle shapes and sizes are representative choices (design
+  variables), not properties of a specific product. $R_K = 10^{-8}$\,m$^2$K\,W$^{-1}$
+  (assumed) unless stated. $^a$Assumed. $^b$From a summary of the source.}
+  \label{tab:fillers}
+  \begin{tabularx}{\linewidth}{@{}lXcc@{}}
+    \toprule
+    Filler & $k_p$ [W\,m$^{-1}$K$^{-1}$], shape & $\rho$ [kg\,m$^{-3}$]
+      & Decomposition \\
+    \midrule
+    CaCO$_3$, 50\,nm / 5\,$\mu$m & 3.5$^b$~\cite{horai1971}, spheres & 2710~\cite{mineraldensity}
+      & 1.78\,MJ\,kg$^{-1}$, 700\,$\pm$\,40\,$^\circ$C~\cite{rodrigueznavarro2009} \\
+    Al(OH)$_3$ (ATH), 1\,$\mu$m & 3$^a$, spheres & 2340~\cite{mineraldensity}
+      & 1.17\,MJ\,kg$^{-1}$, 260\,$\pm$\,20\,$^\circ$C$^b$~\cite{sd_hydroxides} \\
+    Mg(OH)$_2$ (MDH), 1\,$\mu$m & 3$^a$, spheres & 2390~\cite{mineraldensity}
+      & 1.36\,MJ\,kg$^{-1}$, 365\,$\pm$\,20\,$^\circ$C$^b$~\cite{sd_hydroxides} \\
+    h-BN, 5\,$\mu$m $\times$ 100\,nm & 300 in-plane, 3 through$^b$~\cite{huang2018review},
+      platelets ($p = 0.02$) & 2100$^a$ & -- \\
+    Ag nanowires, 84\,nm $\times$ 20\,$\mu$m & 332$^b$~\cite{agnw_nsf}, rods ($p \approx 240$)
+      & 10490 & -- \\
+    MWCNT, 20\,nm $\times$ 10\,$\mu$m & 3000 axial~\cite{kim2001cnt}, rods ($p = 500$),
+      $R_K = 8.3\times10^{-8}$~\cite{huxtable2003} & 1800$^a$ & -- \\
+    Hollow glass bubbles (3M K1) & 0.047~\cite{m3k1}, spheres, 65\,$\mu$m & 125~\cite{m3k1} & -- \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Eleven compositions are compared: neat silicone; single fillers at a high but
+model-valid loading (CaCO$_3$ 30\,vol\% as nano- and microparticles, ATH and MDH
+40\,\%, h-BN 30\,\%, Ag nanowires and CNTs 5\,\%, glass bubbles 50\,\%); and two hybrids
+that pair an insulating or a conducting filler with an endothermic one (40\,\% glass
+bubbles + 20\,\% ATH; 20\,\% h-BN + 20\,\% ATH). Figure~\ref{fig:compk} shows the
+resulting conductivities. Silicone degrades above roughly 200--300\,$^\circ$C, so, like
+the gap pad, all these composites are extrapolated beyond their service range in the
+abuse scenario.
+
+\subsection{Two-dimensional model with a cold plate}
+\label{sec:model2d}
+
+In the 1D model the only heat sink is the pair of stack ends, which exaggerates how much
+an insulating barrier heats the pack in normal use. Real modules stand on a liquid-cooled
+plate. The 2D model adds the cell height $y$ ($H = 100$\,mm):
+\begin{equation}
+  \rho c_p \frac{\partial T}{\partial t} =
+  \frac{\partial}{\partial x}\!\left(k_x \frac{\partial T}{\partial x}\right) +
+  \frac{\partial}{\partial y}\!\left(k_y \frac{\partial T}{\partial y}\right) + q_\text{rxn} + q_\text{gen},
+  \label{eq:heat2d}
+\end{equation}
+with the 1D end condition at $x = 0, L$; a cold plate at $y = 0$
+($h_\text{plate} = 200$\,W\,m$^{-2}$K$^{-1}$ including the interface material, coolant at
+25\,$^\circ$C) under both cells and barriers; and natural convection
+($h = 5$\,W\,m$^{-2}$K$^{-1}$) at the top. Cells are anisotropic: $k_x = 0.8$ is the
+through-plane value of the 1D model and $k_y = 20$\,W\,m$^{-1}$K$^{-1}$ the in-plane
+value along the electrode sheets. Barriers are isotropic. These values, like the cell
+parameters, are illustrative. The trigger condition, kinetics and propagation criterion
+are those of the 1D model, with the cell mean taken over its area.
+
 \subsection{Scenarios and parameters}
 
 \paragraph{Abuse.} Cell~1 starts at 300\,$^\circ$C and everything else at 25\,$^\circ$C.
@@ -366,6 +465,11 @@ enthalpy change exactly, so a node that crosses the whole melting range in one s
 cannot skip the latent heat, which an apparent-heat-capacity method evaluated at the old
 temperature would do.
 
+\paragraph{Two dimensions.} The 2D solver uses the same scheme on a tensor-product mesh
+(10 volumes per cell and 4 per barrier in $x$, 20 over the height), with harmonic-mean
+face conductances in both directions and a sparse direct solve per step. The coarser $x$
+mesh is checked in Section~\ref{sec:verification}.
+
 \paragraph{Energy accounting.} The solver tracks stored enthalpy, unreleased chemical
 energy and cumulative boundary loss. Because both sub-steps are conservative, the
 discrete energy balance closes to round-off. The largest relative residual in any run
@@ -399,6 +503,15 @@ The test suite runs automatically on every commit and checks the following.
         $10^{-9}$ and the final uniform temperature satisfies the enthalpy balance
         including melting. A one-way switch heated past $\Tsw$ stays insulating after
         cooling, while a reversible one recovers, and a larger $\tau$ delays switching.
+  \item \textbf{Composites.} For spheres the effective-medium model reproduces the
+        Maxwell and Hasselman--Johnson formulas to $10^{-12}$; depolarisation factors
+        satisfy $2L_{11} + L_{33} = 1$ and the rod and disc limits; and mixture rules
+        conserve mass and latent heat.
+  \item \textbf{2D solver.} With the cold plate and top removed, the 2D solver reproduces
+        the 1D propagation times and normal-operation peak to $10^{-9}$. For a single
+        uniformly heated cell cooled only by the plate it matches the analytical
+        parabolic profile up to the expected $q\Delta y^2/8k_y$ boundary term, and the
+        energy budget with plate cooling and latent heat closes to below $10^{-9}$.
 \end{enumerate}
 
 \subsection{Why a rate ceiling is needed}

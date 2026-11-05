@@ -166,3 +166,89 @@ MATERIAL_SENSITIVITY = [
     ("aerogel: rho cp x0.7", "aerogel", {"cp": 700.0}),
     ("PCM: no latent heat", "pcm_eg", {"latent_heat": 0.0}),
 ]
+
+
+# ---------------------------------------------------------------------------
+# 2D studies (cold plate): real materials, ideal designs and composites
+# ---------------------------------------------------------------------------
+
+# A barrier is named by a picklable spec so sweeps can run in worker processes:
+#   ("design", name)                  idealised designs in params.DESIGNS
+#   ("candidate", key, overrides)     sourced materials in candidates.py
+#   ("composition", name)             filled silicones in composites.py
+
+
+def barrier_from_spec(spec, thickness: float):
+    kind = spec[0]
+    if kind == "design":
+        b = DESIGNS[spec[1]]()
+        return replace(b, thickness=thickness)
+    if kind == "candidate":
+        from .candidates import to_barrier
+
+        return to_barrier(spec[1], thickness, **(spec[2] if len(spec) > 2 else {}))
+    if kind == "composition":
+        from .composites import COMPOSITIONS
+
+        return COMPOSITIONS[spec[1]].to_barrier(thickness)
+    raise ValueError(spec)
+
+
+def _point2d(args):
+    from .solver2d import simulate_runaway2d, solve_normal_operation2d
+
+    spec, L_mm, p2 = args
+    stack = StackParams(barrier=barrier_from_spec(spec, L_mm * 1e-3))
+    return simulate_runaway2d(stack, p2).n_propagated, solve_normal_operation2d(stack, p2).peak_C
+
+
+@dataclass
+class Containment2D:
+    spec: tuple
+    thickness_mm: np.ndarray  # scanned (and refined) thicknesses, sorted
+    n_propagated: np.ndarray
+    normal_peak_C: np.ndarray
+
+    @property
+    def min_containing_mm(self) -> float | None:
+        ok = self.n_propagated == 1
+        return float(self.thickness_mm[ok][0]) if ok.any() else None
+
+    @property
+    def peak_at_min_C(self) -> float | None:
+        ok = self.n_propagated == 1
+        return float(self.normal_peak_C[ok][0]) if ok.any() else None
+
+
+SCAN2D_MM = np.arange(0.5, 10.0 + 1e-9, 0.5)
+
+
+def containment_scan2d(specs, p2=None, scan_mm=SCAN2D_MM, refine_to_mm=0.125, workers=None):
+    """Scan thickness for every spec, then bisect each containment boundary.
+
+    All points of one round run in parallel. Returns {spec: Containment2D}.
+    """
+    from .solver2d import Params2D
+
+    p2 = p2 or Params2D()
+    pts = {spec: {} for spec in specs}
+    todo = [(spec, float(L), p2) for spec in specs for L in scan_mm]
+    while todo:
+        for (spec, L, _), out in zip(todo, _pmap(_point2d, todo, workers)):
+            pts[spec][L] = out
+        todo = []
+        for spec, d in pts.items():
+            Ls = sorted(d)
+            ok = [L for L in Ls if d[L][0] == 1]
+            if not ok:
+                continue
+            first = ok[0]
+            below = [L for L in Ls if L < first]
+            if below and first - below[-1] > refine_to_mm + 1e-9:
+                todo.append((spec, round(0.5 * (first + below[-1]), 6), p2))
+    out = {}
+    for spec, d in pts.items():
+        Ls = np.array(sorted(d))
+        out[spec] = Containment2D(spec, Ls, np.array([d[L][0] for L in Ls]),
+                                  np.array([d[L][1] for L in Ls]))
+    return out
