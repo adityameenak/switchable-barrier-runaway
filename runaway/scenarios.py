@@ -191,6 +191,8 @@ def barrier_from_spec(spec, thickness: float):
         from .composites import COMPOSITIONS
 
         return COMPOSITIONS[spec[1]].to_barrier(thickness)
+    if kind == "formulation":  # ("formulation", Formulation[, overrides])
+        return spec[1].to_barrier(thickness, **(spec[2] if len(spec) > 2 else {}))
     raise ValueError(spec)
 
 

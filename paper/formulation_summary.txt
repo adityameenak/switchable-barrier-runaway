@@ -1,0 +1,322 @@
+Formulation study (python paper/run_formulation_study.py; python paper/make_figures_formulation.py)
+
+screened: 452; containing at <= 10 mm: 361; at <= 6 mm: 189
+
+formulation                                                  k_on  k_off  L_min   peak
+AgNW 40x40 2% + h-BN 10% + EMS 30% + ATH 10%                2.771  0.532  9.125   39.1
+AgNW 40x40 2% + h-BN 10% + EMS 30% + MDH 10%                2.771  0.532    9.5   39.2
+AgNW 40x40 2% + h-BN 10% + EMS 40%                          2.399  0.390   8.25   39.2
+AgNW 40x40 2% + h-BN 10% + EMS 30%                          2.453  0.501  9.625   39.4
+AgNW 40x40 3% + EMS 30% + ATH 20%                           1.219  0.222  5.125   39.5
+AgNW 40x40 3% + EMS 30% + MDH 20%                           1.219  0.222  5.375   39.6
+AgNW 40x40 3% + EMS 40% + ATH 10%                           0.943  0.157   4.25   39.6
+AgNW 40x40 3% + EMS 40% + MDH 10%                           0.943  0.157  4.375   39.7
+AgNW 40x40 3% + EMS 20% + ATH 20%                           1.269  0.317  6.375   39.8
+AgNW 40x40 3% + EMS 30% + ATH 10%                           0.982  0.200      5   39.8
+AgNW 40x40 1% + h-BN 10% + EMS 20% + ATH 20%                1.801  0.623    9.5   39.9
+AgNW 40x40 3% + EMS 30% + MDH 10%                           0.982  0.200   5.25   40.0
+AgNW 40x40 1% + h-BN 10% + EMS 30% + ATH 10%                1.543  0.439   8.25   40.0
+AgNW 40x40 3% + EMS 20% + MDH 20%                           1.269  0.317  6.875   40.0
+AgNW 40x40 1% + h-BN 10% + EMS 20% + MDH 20%                1.801  0.623     10   40.0
+AgNW 40x40 1% + h-BN 10% + EMS 30% + MDH 10%                1.543  0.439  8.625   40.0
+AgNW 40x40 3% + EMS 40%                                     0.754  0.144   4.25   40.1
+AgNW 40x40 1% + h-BN 10% + EMS 40%                          1.337  0.336  7.625   40.1
+h-BN 10% + EMS 30% + ATH 20%                                1.309  0.432   7.75   40.2
+AgNW 40x40 2% + EMS 30% + ATH 20%                           0.705  0.169   4.25   40.2
+AgNW 40x40 2% + Al2O3 50nm 10% + EMS 20% + ATH 20%          0.894  0.256    5.5   40.3
+AgNW 40x40 1% + h-BN 10% + EMS 20% + ATH 10%                1.580  0.580   9.75   40.3
+AgNW 40x40 3% + EMS 20% + ATH 10%                           1.024  0.279  6.375   40.3
+h-BN 10% + EMS 40% + ATH 10%                                1.123  0.333      7   40.3
+AgNW 40x40 2% + Al2O3 50nm 10% + EMS 30% + ATH 10%          0.698  0.168  4.375   40.3
+
+best per family (containing at <= 6 mm):
+  unfilled / endotherm only        static unfilled                                             k 0.200/0.200  L 5.625  peak 49.1
+  unfilled / endotherm only        switch unfilled + EMS 40% + ATH 20%                         k 0.268/0.093  L 2.875  peak 42.1
+  particles (h-BN, Al2O3)          switch Al2O3 5um 30% + EMS 20% + ATH 10%                    k 0.515/0.204  L 4.75  peak 41.5
+  Ag nanowires                     switch AgNW 40x40 3% + EMS 30% + ATH 20%                    k 1.219/0.222  L 5.125  peak 39.5
+  nanowire + nanoparticle hybrid   switch AgNW 40x40 2% + Al2O3 50nm 10% + EMS 20% + ATH 20%   k 0.894/0.256  L 5.5  peak 40.3
+
+references:
+  design | switchable            L_min 1.75  peak 38.0
+  candidate | graphene_switch    L_min 3.5  peak 38.9
+  candidate | aerogel            L_min 2.25  peak 79.4
+  candidate | mica               L_min 6.125  peak 48.5
+  candidate | ceramic_fibre      L_min 4.125  peak 65.3
+
+lead formulations: ['AgNW 40x40 3% + EMS 30% + ATH 20%', 'AgNW 40x40 3% + EMS 30% + MDH 20%', 'AgNW 40x40 3% + EMS 40% + ATH 10%', 'AgNW 40x40 3% + EMS 40% + MDH 10%', 'Al2O3 5um 30% + EMS 20% + ATH 10%', 'unfilled + EMS 40%', 'unfilled', 'unfilled + EMS 40%', 'unfilled + EMS 40% + ATH 20%', 'AgNW 40x40 1% + EMS 40% + ATH 10%', 'AgNW 40x40 2% + EMS 40%', 'AgNW 40x40 2% + EMS 40% + ATH 10%', 'AgNW 40x40 3% + EMS 40% + ATH 10%']
+
+robustness (L_min mm, peak C):
+  AgNW 40x40 3% + EMS 30% + ATH 20%
+      baseline                             k 1.219/0.222  L 5.125  peak 39.5
+      no junction conduction (g = 0)       k 0.350/0.155  L 4.125  peak 42.5
+      strong junctions (g = 0.5)           k 9.032/0.827  L None  peak -
+      sintered junctions (x10)             k 9.032/0.827  L None  peak -
+      poorly dispersed wires (R_K fit)     k 1.504/0.346  L 6.75  peak 39.6
+      wire k x 0.5                         k 1.178/0.194  L 4.625  peak 39.4
+      expansion E = 3                      k 1.219/0.367  L 7.0  peak 40.1
+      expansion E = 10                     k 1.219/0.126  L 3.375  peak 38.9
+      segregated network                   k 1.219/0.739  L None  peak -
+      gas-cell k = 0.06                    k 1.219/0.249  L 5.5  peak 39.6
+      Expancel 920 (T_sw 163 C)            k 1.219/0.222  L 5.625  peak 39.7
+      slow switch (tau = 30 s)             k 1.219/0.222  L 5.375  peak 39.6
+      instant switch (tau = 0)             k 1.219/0.222  L 4.875  peak 39.4
+      rho cp x 0.7                         k 1.219/0.222  L 5.5  peak 39.6
+  AgNW 40x40 3% + EMS 30% + MDH 20%
+      baseline                             k 1.219/0.222  L 5.375  peak 39.6
+      no junction conduction (g = 0)       k 0.350/0.155  L 4.375  peak 42.8
+      strong junctions (g = 0.5)           k 9.032/0.827  L None  peak -
+      sintered junctions (x10)             k 9.032/0.827  L None  peak -
+      poorly dispersed wires (R_K fit)     k 1.504/0.346  L 7.125  peak 39.7
+      wire k x 0.5                         k 1.178/0.194  L 5.0  peak 39.5
+      expansion E = 3                      k 1.219/0.367  L 7.375  peak 40.2
+      expansion E = 10                     k 1.219/0.126  L 3.625  peak 39.0
+      segregated network                   k 1.219/0.739  L None  peak -
+      gas-cell k = 0.06                    k 1.219/0.249  L 5.875  peak 39.7
+      Expancel 920 (T_sw 163 C)            k 1.219/0.222  L 5.875  peak 39.7
+      slow switch (tau = 30 s)             k 1.219/0.222  L 5.75  peak 39.7
+      instant switch (tau = 0)             k 1.219/0.222  L 5.25  peak 39.5
+      rho cp x 0.7                         k 1.219/0.222  L 6.0  peak 39.8
+  AgNW 40x40 3% + EMS 40% + ATH 10%
+      baseline                             k 0.943/0.157  L 4.25  peak 39.6
+      no junction conduction (g = 0)       k 0.288/0.123  L 3.75  peak 43.0
+      strong junctions (g = 0.5)           k 6.831/0.466  L 8.375  peak 38.3
+      sintered junctions (x10)             k 6.831/0.466  L 8.375  peak 38.3
+      poorly dispersed wires (R_K fit)     k 1.225/0.258  L 6.0  peak 39.8
+      wire k x 0.5                         k 0.897/0.130  L 3.75  peak 39.5
+      expansion E = 3                      k 0.943/0.249  L 5.875  peak 40.3
+      expansion E = 10                     k 0.943/0.097  L 3.0  peak 39.1
+      segregated network                   k 0.943/0.538  L 9.375  peak 41.8
+      gas-cell k = 0.06                    k 0.943/0.180  L 4.625  peak 39.8
+      Expancel 920 (T_sw 163 C)            k 0.943/0.157  L 4.625  peak 39.8
+      slow switch (tau = 30 s)             k 0.943/0.157  L 4.625  peak 39.8
+      instant switch (tau = 0)             k 0.943/0.157  L 4.125  peak 39.6
+      rho cp x 0.7                         k 0.943/0.157  L 4.625  peak 39.8
+      baseline                             k 0.943/0.157  L 4.25  peak 39.6
+      no junction conduction (g = 0)       k 0.288/0.123  L 3.75  peak 43.0
+      strong junctions (g = 0.5)           k 6.831/0.466  L 8.375  peak 38.3
+      sintered junctions (x10)             k 6.831/0.466  L 8.375  peak 38.3
+      poorly dispersed wires (R_K fit)     k 1.225/0.258  L 6.0  peak 39.8
+      wire k x 0.5                         k 0.897/0.130  L 3.75  peak 39.5
+      expansion E = 3                      k 0.943/0.249  L 5.875  peak 40.3
+      expansion E = 10                     k 0.943/0.097  L 3.0  peak 39.1
+      segregated network                   k 0.943/0.538  L 9.375  peak 41.8
+      gas-cell k = 0.06                    k 0.943/0.180  L 4.625  peak 39.8
+      Expancel 920 (T_sw 163 C)            k 0.943/0.157  L 4.625  peak 39.8
+      slow switch (tau = 30 s)             k 0.943/0.157  L 4.625  peak 39.8
+      instant switch (tau = 0)             k 0.943/0.157  L 4.125  peak 39.6
+      rho cp x 0.7                         k 0.943/0.157  L 4.625  peak 39.8
+  AgNW 40x40 3% + EMS 40% + MDH 10%
+      baseline                             k 0.943/0.157  L 4.375  peak 39.7
+      no junction conduction (g = 0)       k 0.288/0.123  L 3.75  peak 43.0
+      strong junctions (g = 0.5)           k 6.831/0.466  L 8.875  peak 38.3
+      sintered junctions (x10)             k 6.831/0.466  L 8.875  peak 38.3
+      poorly dispersed wires (R_K fit)     k 1.225/0.258  L 6.125  peak 39.8
+      wire k x 0.5                         k 0.897/0.130  L 3.875  peak 39.5
+      expansion E = 3                      k 0.943/0.249  L 6.0  peak 40.4
+      expansion E = 10                     k 0.943/0.097  L 3.125  peak 39.1
+      segregated network                   k 0.943/0.538  L 9.625  peak 41.9
+      gas-cell k = 0.06                    k 0.943/0.180  L 4.875  peak 39.9
+      Expancel 920 (T_sw 163 C)            k 0.943/0.157  L 4.75  peak 39.8
+      slow switch (tau = 30 s)             k 0.943/0.157  L 4.875  peak 39.9
+      instant switch (tau = 0)             k 0.943/0.157  L 4.25  peak 39.6
+      rho cp x 0.7                         k 0.943/0.157  L 4.875  peak 39.9
+  Al2O3 5um 30% + EMS 20% + ATH 10%
+      baseline                             k 0.515/0.204  L 4.75  peak 41.5
+      expansion E = 3                      k 0.515/0.276  L 5.75  peak 42.3
+      expansion E = 10                     k 0.515/0.133  L 3.625  peak 40.6
+      segregated network                   k 0.515/0.284  L 5.875  peak 42.4
+      gas-cell k = 0.06                    k 0.515/0.224  L 5.125  peak 41.8
+      Expancel 920 (T_sw 163 C)            k 0.515/0.204  L 5.0  peak 41.7
+      slow switch (tau = 30 s)             k 0.515/0.204  L 5.0  peak 41.7
+      instant switch (tau = 0)             k 0.515/0.204  L 4.625  peak 41.4
+      rho cp x 0.7                         k 0.515/0.204  L 5.375  peak 42.0
+  unfilled + EMS 40%
+      baseline                             k 0.165/0.069  L 2.375  peak 43.6
+      expansion E = 3                      k 0.165/0.083  L 2.875  peak 44.8
+      expansion E = 10                     k 0.165/0.056  L 2.0  peak 42.7
+      segregated network                   k 0.165/0.069  L 2.375  peak 43.6
+      gas-cell k = 0.06                    k 0.165/0.086  L 3.0  peak 45.1
+      Expancel 920 (T_sw 163 C)            k 0.165/0.069  L 2.5  peak 43.9
+      slow switch (tau = 30 s)             k 0.165/0.069  L 2.625  peak 44.2
+      instant switch (tau = 0)             k 0.165/0.069  L 2.375  peak 43.6
+      rho cp x 0.7                         k 0.165/0.069  L 2.5  peak 43.9
+      baseline                             k 0.165/0.069  L 2.375  peak 43.6
+      expansion E = 3                      k 0.165/0.083  L 2.875  peak 44.8
+      expansion E = 10                     k 0.165/0.056  L 2.0  peak 42.7
+      segregated network                   k 0.165/0.069  L 2.375  peak 43.6
+      gas-cell k = 0.06                    k 0.165/0.086  L 3.0  peak 45.1
+      Expancel 920 (T_sw 163 C)            k 0.165/0.069  L 2.5  peak 43.9
+      slow switch (tau = 30 s)             k 0.165/0.069  L 2.625  peak 44.2
+      instant switch (tau = 0)             k 0.165/0.069  L 2.375  peak 43.6
+      rho cp x 0.7                         k 0.165/0.069  L 2.5  peak 43.9
+  unfilled
+      baseline                             k 0.200/0.200  L 5.625  peak 49.1
+      rho cp x 0.7                         k 0.200/0.200  L 6.25  peak 50.3
+  unfilled + EMS 40%
+      baseline                             k 0.165/0.069  L 2.375  peak 43.6
+      expansion E = 3                      k 0.165/0.083  L 2.875  peak 44.8
+      expansion E = 10                     k 0.165/0.056  L 2.0  peak 42.7
+      segregated network                   k 0.165/0.069  L 2.375  peak 43.6
+      gas-cell k = 0.06                    k 0.165/0.086  L 3.0  peak 45.1
+      Expancel 920 (T_sw 163 C)            k 0.165/0.069  L 2.5  peak 43.9
+      slow switch (tau = 30 s)             k 0.165/0.069  L 2.625  peak 44.2
+      instant switch (tau = 0)             k 0.165/0.069  L 2.375  peak 43.6
+      rho cp x 0.7                         k 0.165/0.069  L 2.5  peak 43.9
+      baseline                             k 0.165/0.069  L 2.375  peak 43.6
+      expansion E = 3                      k 0.165/0.083  L 2.875  peak 44.8
+      expansion E = 10                     k 0.165/0.056  L 2.0  peak 42.7
+      segregated network                   k 0.165/0.069  L 2.375  peak 43.6
+      gas-cell k = 0.06                    k 0.165/0.086  L 3.0  peak 45.1
+      Expancel 920 (T_sw 163 C)            k 0.165/0.069  L 2.5  peak 43.9
+      slow switch (tau = 30 s)             k 0.165/0.069  L 2.625  peak 44.2
+      instant switch (tau = 0)             k 0.165/0.069  L 2.375  peak 43.6
+      rho cp x 0.7                         k 0.165/0.069  L 2.5  peak 43.9
+  unfilled + EMS 40% + ATH 20%
+      baseline                             k 0.268/0.093  L 2.875  peak 42.1
+      expansion E = 3                      k 0.268/0.121  L 3.5  peak 43.0
+      expansion E = 10                     k 0.268/0.068  L 2.25  peak 41.2
+      segregated network                   k 0.268/0.106  L 3.25  peak 42.7
+      gas-cell k = 0.06                    k 0.268/0.112  L 3.375  peak 42.9
+      Expancel 920 (T_sw 163 C)            k 0.268/0.093  L 3.0  peak 42.3
+      slow switch (tau = 30 s)             k 0.268/0.093  L 3.0  peak 42.3
+      instant switch (tau = 0)             k 0.268/0.093  L 2.75  peak 41.9
+      rho cp x 0.7                         k 0.268/0.093  L 3.0  peak 42.3
+  AgNW 40x40 1% + EMS 40% + ATH 10%
+      baseline                             k 0.305/0.098  L 3.125  peak 41.9
+      no junction conduction (g = 0)       k 0.237/0.095  L 3.0  peak 42.9
+      strong junctions (g = 0.5)           k 0.915/0.126  L 3.625  peak 39.4
+      sintered junctions (x10)             k 0.915/0.126  L 3.625  peak 39.4
+      poorly dispersed wires (R_K fit)     k 0.401/0.132  L 3.875  peak 41.7
+      wire k x 0.5                         k 0.290/0.089  L 2.875  peak 41.8
+      expansion E = 3                      k 0.305/0.129  L 3.875  peak 42.9
+      expansion E = 10                     k 0.305/0.072  L 2.375  peak 40.9
+      segregated network                   k 0.305/0.137  L 4.0  peak 43.1
+      gas-cell k = 0.06                    k 0.305/0.116  L 3.5  peak 42.4
+      Expancel 920 (T_sw 163 C)            k 0.305/0.098  L 3.25  peak 42.1
+      slow switch (tau = 30 s)             k 0.305/0.098  L 3.25  peak 42.1
+      instant switch (tau = 0)             k 0.305/0.098  L 3.0  peak 41.7
+      rho cp x 0.7                         k 0.305/0.098  L 3.25  peak 42.1
+  AgNW 40x40 2% + EMS 40%
+      baseline                             k 0.441/0.112  L 3.5  peak 41.0
+      no junction conduction (g = 0)       k 0.220/0.099  L 3.25  peak 43.7
+      strong junctions (g = 0.5)           k 2.433/0.224  L 5.875  peak 38.8
+      sintered junctions (x10)             k 2.433/0.224  L 5.875  peak 38.8
+      poorly dispersed wires (R_K fit)     k 0.628/0.178  L 5.0  peak 41.0
+      wire k x 0.5                         k 0.407/0.092  L 3.0  peak 40.8
+      expansion E = 3                      k 0.441/0.156  L 4.5  peak 41.9
+      expansion E = 10                     k 0.441/0.078  L 2.625  peak 40.2
+      segregated network                   k 0.441/0.211  L 5.625  peak 42.9
+      gas-cell k = 0.06                    k 0.441/0.129  L 4.0  peak 41.4
+      Expancel 920 (T_sw 163 C)            k 0.441/0.112  L 3.75  peak 41.2
+      slow switch (tau = 30 s)             k 0.441/0.112  L 3.875  peak 41.3
+      instant switch (tau = 0)             k 0.441/0.112  L 3.375  peak 40.9
+      rho cp x 0.7                         k 0.441/0.112  L 3.75  peak 41.2
+  AgNW 40x40 2% + EMS 40% + ATH 10%
+      baseline                             k 0.548/0.124  L 3.625  peak 40.5
+      no junction conduction (g = 0)       k 0.263/0.109  L 3.375  peak 43.0
+      strong junctions (g = 0.5)           k 3.120/0.255  L 5.875  peak 38.6
+      sintered junctions (x10)             k 3.120/0.255  L 5.875  peak 38.6
+      poorly dispersed wires (R_K fit)     k 0.738/0.191  L 4.875  peak 40.5
+      wire k x 0.5                         k 0.518/0.105  L 3.25  peak 40.3
+      expansion E = 3                      k 0.548/0.178  L 4.75  peak 41.3
+      expansion E = 10                     k 0.548/0.083  L 2.625  peak 39.7
+      segregated network                   k 0.548/0.287  L 6.5  peak 42.6
+      gas-cell k = 0.06                    k 0.548/0.143  L 4.0  peak 40.7
+      Expancel 920 (T_sw 163 C)            k 0.548/0.124  L 3.875  peak 40.6
+      slow switch (tau = 30 s)             k 0.548/0.124  L 3.875  peak 40.6
+      instant switch (tau = 0)             k 0.548/0.124  L 3.5  peak 40.4
+      rho cp x 0.7                         k 0.548/0.124  L 3.875  peak 40.6
+  AgNW 40x40 3% + EMS 40% + ATH 10%
+      baseline                             k 0.943/0.157  L 4.25  peak 39.6
+      no junction conduction (g = 0)       k 0.288/0.123  L 3.75  peak 43.0
+      strong junctions (g = 0.5)           k 6.831/0.466  L 8.375  peak 38.3
+      sintered junctions (x10)             k 6.831/0.466  L 8.375  peak 38.3
+      poorly dispersed wires (R_K fit)     k 1.225/0.258  L 6.0  peak 39.8
+      wire k x 0.5                         k 0.897/0.130  L 3.75  peak 39.5
+      expansion E = 3                      k 0.943/0.249  L 5.875  peak 40.3
+      expansion E = 10                     k 0.943/0.097  L 3.0  peak 39.1
+      segregated network                   k 0.943/0.538  L 9.375  peak 41.8
+      gas-cell k = 0.06                    k 0.943/0.180  L 4.625  peak 39.8
+      Expancel 920 (T_sw 163 C)            k 0.943/0.157  L 4.625  peak 39.8
+      slow switch (tau = 30 s)             k 0.943/0.157  L 4.625  peak 39.8
+      instant switch (tau = 0)             k 0.943/0.157  L 4.125  peak 39.6
+      rho cp x 0.7                         k 0.943/0.157  L 4.625  peak 39.8
+      baseline                             k 0.943/0.157  L 4.25  peak 39.6
+      no junction conduction (g = 0)       k 0.288/0.123  L 3.75  peak 43.0
+      strong junctions (g = 0.5)           k 6.831/0.466  L 8.375  peak 38.3
+      sintered junctions (x10)             k 6.831/0.466  L 8.375  peak 38.3
+      poorly dispersed wires (R_K fit)     k 1.225/0.258  L 6.0  peak 39.8
+      wire k x 0.5                         k 0.897/0.130  L 3.75  peak 39.5
+      expansion E = 3                      k 0.943/0.249  L 5.875  peak 40.3
+      expansion E = 10                     k 0.943/0.097  L 3.0  peak 39.1
+      segregated network                   k 0.943/0.538  L 9.375  peak 41.8
+      gas-cell k = 0.06                    k 0.943/0.180  L 4.625  peak 39.8
+      Expancel 920 (T_sw 163 C)            k 0.943/0.157  L 4.625  peak 39.8
+      slow switch (tau = 30 s)             k 0.943/0.157  L 4.625  peak 39.8
+      instant switch (tau = 0)             k 0.943/0.157  L 4.125  peak 39.6
+      rho cp x 0.7                         k 0.943/0.157  L 4.625  peak 39.8
+
+extension to 45-50 vol% microspheres:
+  unfilled + EMS 50%                           k 0.157/0.060  L 2.125  peak 43.2
+  unfilled + EMS 45%                           k 0.161/0.064  L 2.25  peak 43.4
+  unfilled + EMS 50% + ATH 10%                 k 0.203/0.070  L 2.375  peak 42.5
+  unfilled + EMS 45% + ATH 10%                 k 0.207/0.075  L 2.5  peak 42.6
+  AgNW 40x40 1% + EMS 50%                      k 0.235/0.076  L 2.625  peak 42.3
+  AgNW 40x40 1% + EMS 45%                      k 0.240/0.081  L 2.75  peak 42.4
+  AgNW 40x40 1% + EMS 45% + ATH 10%            k 0.299/0.091  L 2.875  peak 41.7
+  AgNW 40x40 2% + EMS 50%                      k 0.423/0.097  L 3.125  peak 40.8
+  AgNW 40x40 2% + EMS 45%                      k 0.432/0.103  L 3.375  peak 40.9
+  AgNW 40x40 2% + EMS 45% + ATH 10%            k 0.537/0.114  L 3.375  peak 40.3
+  AgNW 40x40 3% + EMS 50%                      k 0.722/0.122  L 3.75  peak 39.9
+  AgNW 40x40 3% + EMS 45%                      k 0.737/0.132  L 4.0  peak 40.0
+  AgNW 40x40 3% + EMS 45% + ATH 10%            k 0.923/0.143  L 4.0  peak 39.5
+
+PICK: {'name': 'unfilled + EMS 40% + ATH 20%', 'particles': [['ath', 0.2]], 'wire': None, 'phi_w': 0.0, 'spheres': 'ems_051', 'phi_ms': 0.4, 'E': 5.0, 'network': 'dilute', 'sinter': 1.0, 'k_gas': None, 'wire_g': None, 'wire_RK': None}
+
+map phi_ms x E (L_min, peak, k_off):
+  ms 0.20 E    2  L 5.25  peak 45.0  k 0.291/0.209
+  ms 0.20 E    3  L 4.75  peak 44.3  k 0.291/0.177
+  ms 0.20 E    5  L 4.0  peak 43.3  k 0.291/0.140
+  ms 0.20 E   10  L 3.0  peak 41.9  k 0.291/0.099
+  ms 0.20 E   20  L 2.375  peak 41.1  k 0.291/0.073
+  ms 0.30 E    2  L 4.625  peak 44.4  k 0.279/0.176
+  ms 0.30 E    3  L 4.0  peak 43.5  k 0.279/0.144
+  ms 0.30 E    5  L 3.25  peak 42.5  k 0.279/0.111
+  ms 0.30 E   10  L 2.5  peak 41.4  k 0.279/0.080
+  ms 0.30 E   20  L 2.0  peak 40.7  k 0.279/0.061
+  ms 0.40 E    2  L 4.125  peak 44.0  k 0.268/0.150
+  ms 0.40 E    3  L 3.5  peak 43.0  k 0.268/0.121
+  ms 0.40 E    5  L 2.875  peak 42.1  k 0.268/0.093
+  ms 0.40 E   10  L 2.25  peak 41.2  k 0.268/0.068
+  ms 0.40 E   20  L 1.875  peak 40.6  k 0.268/0.055
+  ms 0.50 E    2  L 3.75  peak 43.7  k 0.256/0.129
+  ms 0.50 E    3  L 3.125  peak 42.7  k 0.256/0.104
+  ms 0.50 E    5  L 2.625  peak 41.9  k 0.256/0.080
+  ms 0.50 E   10  L 2.0  peak 40.9  k 0.256/0.061
+  ms 0.50 E   20  L 1.75  peak 40.5  k 0.256/0.051
+
+map phi_w x g:
+  w 0.005 g    0 dilute  L 3.0  peak 42.1  k 0.279/0.100
+  w 0.005 g    0 segregated  L 3.25  peak 42.5  k 0.279/0.110
+  w 0.005 g 0.05 dilute  L 3.0  peak 41.8  k 0.299/0.100
+  w 0.005 g 0.05 segregated  L 3.625  peak 42.7  k 0.299/0.125
+  w 0.005 g  0.5 dilute  L 3.125  peak 40.5  k 0.471/0.106
+  w 0.005 g  0.5 segregated  L 6.0  peak 42.9  k 0.471/0.264
+  w 0.010 g    0 dilute  L 3.125  peak 42.1  k 0.291/0.106
+  w 0.010 g    0 segregated  L 3.375  peak 42.4  k 0.291/0.113
+  w 0.010 g 0.05 dilute  L 3.25  peak 41.3  k 0.377/0.110
+  w 0.010 g 0.05 segregated  L 4.625  peak 42.7  k 0.377/0.179
+  w 0.010 g  0.5 dilute  L 3.75  peak 39.1  k 1.148/0.143
+  w 0.010 g  0.5 segregated  L None  peak -  k 1.148/0.774
+  w 0.020 g    0 dilute  L 3.5  peak 42.3  k 0.315/0.119
+  w 0.020 g    0 segregated  L 3.5  peak 42.3  k 0.315/0.119
+  w 0.020 g 0.05 dilute  L 3.625  peak 40.0  k 0.677/0.136
+  w 0.020 g 0.05 segregated  L 7.5  peak 42.2  k 0.677/0.395
+  w 0.020 g  0.5 dilute  L 5.875  peak 38.4  k 3.935/0.288
+  w 0.020 g  0.5 segregated  L None  peak -  k 3.935/2.879
+  w 0.030 g    0 dilute  L 3.75  peak 42.2  k 0.339/0.133
+  w 0.030 g    0 segregated  L 3.625  peak 42.1  k 0.339/0.126
+  w 0.030 g 0.05 dilute  L 4.25  peak 39.3  k 1.170/0.173
+  w 0.030 g 0.05 segregated  L None  peak -  k 1.170/0.761
+  w 0.030 g  0.5 dilute  L 8.375  peak 38.2  k 8.649/0.529
+  w 0.030 g  0.5 segregated  L None  peak -  k 8.649/6.481

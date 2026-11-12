@@ -81,7 +81,17 @@ paraffin/graphite phase-change composite do not contain it at any thickness up t
 10\,mm. A published graphene/microsphere thermal switch contains runaway at 3.5\,mm while
 keeping the normal-use peak within 1\,K of the ideal conductor, and is the best of the six
 under every sensitivity case tested. Cell and kinetic parameters remain order-of-magnitude
-placeholders, so the conclusions are qualitative.
+placeholders, so the conclusions are qualitative. Finally, 452 filled-silicone formulations
+(particles, silver nanowires, nanoparticle--nanowire hybrids, endothermic fillers and
+expandable microspheres) are screened with an effective-medium model extended for
+fin-limited nanowires, percolating wire networks and microsphere expansion, and
+checked against measured nanowire composites. Static formulations need at least
+5.6\,mm to contain runaway, and 8.5\,mm or more to keep the normal-use peak near
+44\,$^\circ$C. The recommended
+formulation is silicone with 40\,vol\% expandable microspheres and 20\,vol\% Al(OH)$_3$,
+which contains runaway at 2.9\,mm (3.5\,mm in the worst case tested) at a 42\,$^\circ$C
+normal-use peak. Conductive nanowire networks raise cold-state conductivity but are
+counterproductive unless the expansion breaks them.
 \end{abstract}
 
 % =====================================================================
@@ -126,7 +136,7 @@ battery modules has been demonstrated experimentally~\cite{wang2024regulator}.
 \paragraph{This work.}
 This report complements that work with a deliberately minimal model that isolates the
 conductivity-switching function of a barrier, and maps which switch properties are
-needed for containment without penalising normal operation. It asks three questions:
+needed for containment without penalising normal operation. It asks five questions:
 \begin{enumerate}
   \item Does an idealised switchable barrier deliver both the conductor's normal-use
         temperature and the insulator's containment?
@@ -134,6 +144,8 @@ needed for containment without penalising normal operation. It asks three questi
   \item How should its switch temperature be chosen?
   \item Which of six real barrier materials, with properties taken from datasheets and
         the literature, best balances containment against normal-use temperature?
+  \item Which filled-silicone formulation (fillers, nanoparticles, nanowires and their
+        combinations) should be made and tested, and how robust is that choice?
 \end{enumerate}
 The emphasis is on a transparent, verified model rather than quantitative prediction.
 The cell and kinetic parameters are illustrative, order-of-magnitude values and have
@@ -350,6 +362,121 @@ resulting conductivities. Silicone degrades above roughly 200--300\,$^\circ$C, s
 the gap pad, all these composites are extrapolated beyond their service range in the
 abuse scenario.
 
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.62\linewidth]{fig_composites_k.png}
+  \caption{Effective conductivity of silicone with each filler of Table~\ref{tab:fillers}
+  (Nan et al.\ model). The nanowire and nanotube curves are upper bounds; a
+  fin-limited model for wires is introduced in Section~\ref{sec:formulation-model}.}
+  \label{fig:compk}
+\end{figure}
+
+\subsection{Formulation design: nanowires, hybrids and an expanding switch}
+\label{sec:formulation-model}
+
+The eleven fixed compositions sample single fillers. Designing a formulation needs the
+model to answer three further questions: how much do nanowires really add, what happens
+when nanoparticles and nanowires are combined, and can a composite be made to switch?
+Four extensions, implemented in \texttt{runaway/formulation.py}, address these. Each
+reduces to Eq.~\eqref{eq:nan} when its ingredient is absent.
+
+\paragraph{Fin-limited nanowires.} Applied to a nanowire, Eq.~\eqref{eq:nan} lets the
+wire carry heat along its whole length. For aspect ratios of 100--1000 this predicts
+about 5\,W\,m$^{-1}$K$^{-1}$ for 5\,vol\% silver nanowires in silicone
+(Fig.~\ref{fig:compk}), several times what is measured in comparable composites. Heat
+has to enter and leave a wire through its surface, across the interface resistance and
+the polymer around it. The wire therefore behaves as a fin with exchange coefficient
+$h_\mathrm{eff} = [R_K + D/(2k_h)]^{-1}$, where $D$ is the wire diameter and $k_h$ the
+conductivity of the host it sits in. Its effective axial conductivity is
+\begin{equation}
+  k_\mathrm{ax} = \eta\,k_w, \qquad \eta = \frac{\tanh(m\ell)}{m\ell}, \qquad
+  m = \sqrt{\frac{4h_\mathrm{eff}}{k_w D}},
+  \label{eq:fin}
+\end{equation}
+with $\ell$ half the wire length. $k_\mathrm{ax}$ replaces $k_{p,33}$ in
+Eq.~\eqref{eq:nan}. For a 40\,nm\,$\times$\,40\,$\mu$m wire in silicone,
+$\eta \approx 0.03$. The intrinsic wire conductivity falls with diameter because of
+boundary scattering. It is taken as $k_w = 429/(1 + D_0/D)$\,W\,m$^{-1}$K$^{-1}$ with
+$D_0 = 24.5$\,nm, which reproduces the measured 332\,W\,m$^{-1}$K$^{-1}$ at
+84\,nm~\cite{agnw_nsf} and bulk silver for thick wires (an assumed form).
+
+\paragraph{Percolating wire networks.} Randomly oriented slender rods first form a
+connected network when the number density times their mean excluded volume reaches
+one~\cite{balberg1984,florian2001}. For rods of length $L$ and diameter $D$ this gives the
+threshold $\phi_c = D/(2L)$, about 0.05\,vol\% for 40\,nm\,$\times$\,40\,$\mu$m wires.
+Above it, heat can also cross wire--wire junctions. Treating each wire as isothermal and
+summing the heat dissipated over the junctions in a uniform gradient gives
+$k_\mathrm{net} = (\pi/72)\,n^2 L^4 D\,G_c$ for $n$ wires per unit volume and junction
+conductance $G_c$, the $n^2$ scaling found for nanotube
+networks~\cite{volkov2010}. With $G_c = g\,k_h D$ (a junction bridged by polymer, $g$
+a dimensionless junction coefficient) and the 3D conductivity exponent of two near the
+threshold,
+\begin{equation}
+  k_\mathrm{net} = \frac{2}{9\pi}\left(\frac{L}{D}\right)^{2} g\,k_h\,(\phi_w - \phi_c)^2 ,
+  \label{eq:net}
+\end{equation}
+which is added in parallel to the dispersed-wire result. Polymer composites show little
+or no thermal percolation in practice~\cite{shenogina2005}, so $g$ is small by default
+($g = 0.05$) and is varied from 0 to 0.5, with a further $\times10$ for sintered junctions.
+
+\paragraph{Nanoparticle--nanowire hybrids.} Particles and wires are combined by
+homogenising in two steps. Spherical or platelet particles are first mixed into the
+matrix with Eq.~\eqref{eq:nan} (fractions taken relative to the non-wire volume),
+giving a host conductivity $k_h$. The wires are then embedded in that host. Particles help
+wires in two ways: a better host raises $h_\mathrm{eff}$ in Eq.~\eqref{eq:fin}, and it
+raises the junction conductance in Eq.~\eqref{eq:net}.
+
+\paragraph{Expandable-microsphere switch.} Thermoplastic microspheres filled with a
+volatile hydrocarbon expand irreversibly when heated through a supplier-specified
+range. For the grade used here (Expancel 051 DU 40) expansion begins at 105--110\,$^\circ$C
+and peaks at 142--151\,$^\circ$C~\cite{expancel051}. A volume fraction $\phi_s$ of spheres
+expanding by a volume ratio $E$ dilutes every other phase by
+$X = 1 + \phi_s(E-1)$ and turns the spheres into gas cells occupying $\phi_s E/X$
+($k = 0.04$\,W\,m$^{-1}$K$^{-1}$, assumed). The hot-state conductivity $\koff$ is the
+two-step model evaluated with the diluted fractions. If the dilution takes the wire
+fraction below $\phi_c$ the network term vanishes, so wires can amplify the switch.
+The opposite, conservative assumption keeps the network intact in the polymer struts
+between the gas cells (``segregated''). Free expansion exceeds 40-fold (the datasheet's
+expanded density is at most 25\,kg\,m$^{-3}$), but a cured elastomer resists it, so
+$E = 5$ is assumed and varied from 2 to 20. The composite enters the solver as a
+one-way switch of the kind in Section~\ref{sec:materials-model}: $\kon$ and $\koff$
+as computed, $\Tsw = 127\,^\circ$C at the middle of the expansion range, a width such that
+10--90\,\% of the change spans $T_\mathrm{start}$ to $T_\mathrm{max}$ ($w = 8.9$\,K), and
+$\tau = 10$\,s as for the graphene switch. Barrier thickness and heat capacity are held at
+their unexpanded values. A barrier that also grew thicker would insulate better, so this
+is conservative for containment. ATH or MDH added to the formulation carries its
+decomposition enthalpy as in Section~\ref{sec:composites-model}. Alumina particles
+($k = 30$\,W\,m$^{-1}$K$^{-1}$~\cite{kyocera_al2o3}) are added to the filler set as
+nanoparticles (50\,nm) and microparticles (5\,$\mu$m).
+
+\paragraph{Check against measured composites.} Figure~\ref{fig:formk}a compares the
+nanowire model with measured silver-nanowire/epoxy composites. Without fitting, the
+default interface resistance ($R_K = 10^{-8}$\,m$^2$K\,W$^{-1}$) gives
+1.11\,W\,m$^{-1}$K$^{-1}$ for 4\,vol\% silica-coated wires, against 1.03
+measured~\cite{chen2014agnw} (the wire size is not in the abstract and
+100\,nm\,$\times$\,15\,$\mu$m is assumed). It gives 0.33\,W\,m$^{-1}$K$^{-1}$ for
+0.46\,vol\% of 120\,nm\,$\times$\,15\,$\mu$m wires, against 0.35~\cite{zhang2019agnw}.
+The same study's uncoated wires reached only 0.57\,W\,m$^{-1}$K$^{-1}$~\cite{chen2014agnw}.
+Reproducing that needs an effective interface resistance 350 times larger,
+$3.5\times10^{-6}$\,m$^2$K\,W$^{-1}$, which is read here as poor dispersion and used as
+a sensitivity case. For hybrids the model is conservative. With 40\,vol\% alumina in
+epoxy, adding 0.5\,vol\% nanowires raised the measured conductivity by
+106\,\%~\cite{hu2021agnwal2o3}. The two-step model predicts 13\,\%, because it does not
+represent wires bridging neighbouring particles. Per unit volume, nanowires raise $k$
+about ten times more than particles (Fig.~\ref{fig:formk}b), but the fin limit keeps
+5\,vol\% of 84\,nm wires in silicone at about 1\,W\,m$^{-1}$K$^{-1}$, not the 5 of
+Fig.~\ref{fig:compk}.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\linewidth]{fig_form_k.png}
+  \caption{(a) Fin-limited nanowire model (lines) against measured silver-nanowire/epoxy
+  composites (markers); the dashed line is the unmodified Nan model. (b) Single fillers in
+  silicone with the formulation model. Below the percolation threshold the nanowire curves
+  are set by the fin limit; above it, the thin, long wires gain a junction network.}
+  \label{fig:formk}
+\end{figure}
+
 \subsection{Two-dimensional model with a cold plate}
 \label{sec:model2d}
 
@@ -507,6 +634,13 @@ The test suite runs automatically on every commit and checks the following.
         Maxwell and Hasselman--Johnson formulas to $10^{-12}$; depolarisation factors
         satisfy $2L_{11} + L_{33} = 1$ and the rod and disc limits; and mixture rules
         conserve mass and latent heat.
+  \item \textbf{Formulations.} Without wires or microspheres the two-step model equals
+        the Nan model to $10^{-12}$; the dilute limit matches Maxwell's first-order
+        result; the percolation threshold and the quadratic growth above it follow
+        Eq.~\eqref{eq:net}; a short wire is nearly isothermal ($\eta > 0.95$); the two
+        calibration points are reproduced to within 10\,\%; and expansion lowers $k$,
+        more so for larger $E$, with the segregated network never insulating better
+        than the dilute one.
   \item \textbf{2D solver.} With the cold plate and top removed, the 2D solver reproduces
         the 1D propagation times and normal-operation peak to $10^{-9}$. For a single
         uniformly heated cell cooled only by the plate it matches the analytical
@@ -769,6 +903,179 @@ result rests on a laboratory material characterised here only by its published h
 numbers, so measured $k(T)$, heat capacity and cycling data are needed before it can be
 recommended for a real pack.
 
+\subsection{Formulation design}
+\label{sec:formulation}
+
+The products above are fixed. This section uses the model of
+Section~\ref{sec:formulation-model} to ask what a silicone barrier should be made of.
+Each formulation is scored like the products: the thinnest barrier that confines runaway
+to the trigger cell, found by bisection to 0.125\,mm between 0.25 and 10\,mm, and the
+normal-operation peak at that thickness. The reference materials were rescored the same
+way. On the finer grid mica contains at 6.125\,mm (48.5\,$^\circ$C) and ceramic fibre at
+4.125\,mm (65.3\,$^\circ$C); the other values match Table~\ref{tab:matresults}.
+
+\paragraph{Screen.} The screen crossed 21 conductive systems with five microsphere
+fractions (0--40\,vol\%) and five endothermic options (none, or 10 or 20\,vol\% ATH or
+MDH), keeping total filler at or below 60\,vol\% as a castability limit (assumed). That
+gave 452 formulations. The conductive systems were: none; silica-coated silver nanowires of three
+sizes (40\,nm\,$\times$\,40\,$\mu$m, 60\,nm\,$\times$\,20\,$\mu$m,
+100\,nm\,$\times$\,15\,$\mu$m) at 0.5--3\,vol\%; h-BN at 10 and 20\,vol\%;
+5\,$\mu$m alumina at 20 and 30\,vol\%; and four hybrids of 1 or 2\,vol\% of the thinnest
+wires with 10\,vol\% h-BN or 50\,nm alumina. Of the 452, 361 contain runaway at some
+thickness up to 10\,mm (Fig.~\ref{fig:formscreen}).
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\linewidth]{fig_form_screen.png}
+  \caption{(a) Thinnest containing barrier and normal-operation peak for every screened
+  formulation that contains runaway up to 10\,mm (circles: with expandable microspheres;
+  triangles: static), with the reference materials and the selected formulation.
+  (b) The lowest normal-operation peak reached by each family among formulations that
+  contain at 6\,mm or less, against microsphere fraction.}
+  \label{fig:formscreen}
+\end{figure}
+
+\paragraph{Static formulations repeat the material trade-off.} Without microspheres a
+formulation is a static barrier, and the $\koff/L$ criterion of
+Section~\ref{sec:results-map} applies to its single conductivity. Only 55 of the 105 static
+formulations contain runaway at all. Neat silicone needs 5.6\,mm and peaks at 49.1\,$^\circ$C,
+close to mica. Filling raises $k$, which lowers the normal-use peak but raises the
+thickness needed: the best static formulation (30\,vol\% alumina + 20\,vol\% ATH) peaks at
+43.1\,$^\circ$C but needs 9.25\,mm. Static nanowire formulations contain only at low
+loadings (0.5--2\,vol\%, $k \le 0.54$\,W\,m$^{-1}$K$^{-1}$) and then need 6--9.25\,mm.
+Above about 0.5\,W\,m$^{-1}$K$^{-1}$, which includes every h-BN formulation, they conduct
+well enough that, like the gap pad, they never contain.
+No choice of particle, nanoparticle or nanowire escapes the conflict, because a static
+filler cannot tell normal operation from runaway.
+
+\paragraph{Microspheres are the main lever.} Adding expandable microspheres turns the
+composite into a one-way switch, and 306 of the 347 switching formulations contain.
+Figure~\ref{fig:formscreen}b shows that the microsphere fraction matters more than the
+choice of conductive filler. Every formulation on the screen's thickness--temperature
+Pareto front used the largest fraction screened, 40\,vol\%:
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+  \toprule
+  Formulation (vol\%, rest silicone) & $\kon$ / $\koff$ [W\,m$^{-1}$K$^{-1}$] & Thinnest [mm] & Peak [$^\circ$C] \\
+  \midrule
+  40 microspheres                         & 0.165 / 0.069 & 2.375 & 43.6 \\
+  40 microspheres + 20 ATH                & 0.268 / 0.093 & 2.875 & 42.1 \\
+  40 microspheres + 10 ATH + 1 AgNW       & 0.305 / 0.098 & 3.125 & 41.9 \\
+  40 microspheres + 2 AgNW                & 0.441 / 0.112 & 3.5   & 41.0 \\
+  40 microspheres + 10 ATH + 2 AgNW       & 0.548 / 0.124 & 3.625 & 40.5 \\
+  40 microspheres + 10 ATH + 3 AgNW       & 0.943 / 0.157 & 4.25  & 39.6 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+A second pass extended the fraction to 45 and 50\,vol\%. 50\,vol\% microspheres with
+10\,vol\% ATH contains at 2.375\,mm (42.5\,$^\circ$C), a small further gain at a filler
+loading that is likely to be hard to process. Figure~\ref{fig:formswitch}a,b shows why
+the fraction dominates. Expansion lowers $\koff$ roughly in proportion to the gas-cell
+fraction it creates, while the cold-state $\kon$ barely changes. The expansion ratio $E$
+matters as much: at 40\,vol\% the thinnest containing barrier goes from 4.1\,mm at
+$E = 2$ to 1.9\,mm at $E = 20$. Even at $E = 2$ (4.1\,mm, 44.0\,$^\circ$C) it needs less than half
+the thickness of the best static formulation at a similar peak (9.25\,mm,
+43.1\,$^\circ$C).
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\linewidth]{fig_form_switch.png}
+  \caption{Around the selected formulation (silicone + microspheres + 20\,vol\% ATH).
+  (a) Hot-state conductivity after expansion against microsphere fraction for several
+  expansion ratios $E$; the dashed line is the cold-state $\kon$. (b) Thinnest containing
+  barrier. (c) Thinnest containing barrier when 40\,nm\,$\times$\,40\,$\mu$m silver
+  nanowires are added, for junction coefficients $g$ and the dilute (solid) or segregated
+  (dashed) network assumption; missing points do not contain up to 10\,mm.}
+  \label{fig:formswitch}
+\end{figure}
+
+\paragraph{Nanowires help only if expansion breaks their network.} Nanowires are the most
+efficient way to raise $\kon$, and the best formulations in the screen contained them:
+3\,vol\% wires with 30\,vol\% microspheres and 20\,vol\% ATH peaks at 39.5\,$^\circ$C,
+contained at 5.1\,mm. Their weakness is the hot state. The wires that raise $\kon$ also
+raise $\koff$, unless expansion pushes them below the percolation threshold. With
+40\,nm\,$\times$\,40\,$\mu$m wires the threshold is only 0.05\,vol\%, so a five-fold
+expansion of 40\,vol\% microspheres ($X = 2.6$) leaves 1--3\,vol\% loadings far above it.
+Figure~\ref{fig:formswitch}c shows the consequence. With weak junctions ($g \le 0.05$)
+and a dilute network, wires cost a little thickness and buy a little temperature. With
+strong junctions ($g = 0.5$) the thinnest containing barrier grows to 5.9\,mm at
+2\,vol\% and 8.4\,mm at 3\,vol\%. If the network also survives in the polymer struts,
+1\,vol\% of strongly joined wires, or 3\,vol\% of weakly joined ones, never contains. The formulation model
+cannot say which case real composites fall in. Measured nanowire composites show weak
+junctions (Section~\ref{sec:formulation-model}), but these were dispersed in a rigid
+epoxy and never expanded. Hybrids with nanoparticles did not improve on wires alone in
+the screen. Nanoparticles raise $\kon$ slightly through the host conductivity, but they
+also stay in the hot state and raise $\koff$, and the model credits them with little of
+the particle-bridging synergy seen in experiments~\cite{hu2021agnwal2o3}.
+
+\paragraph{Endothermic fillers.} ATH and MDH absorb 0.4--0.5\,MJ\,kg$^{-1}$ of the
+composite at 20\,vol\%, but in this model that does little for containment. At 40\,vol\%
+microspheres, adding 20\,vol\% ATH lengthens the thinnest containing barrier from 2.375
+to 2.875\,mm, because the particles ($k_p = 3$\,W\,m$^{-1}$K$^{-1}$) raise $\koff$. It also
+lowers the normal-use peak by 1.5\,K, because they raise $\kon$. ATH matches or beats MDH in
+all 139 pairings that contain (2.875 vs.\ 3.0\,mm at 20\,vol\%), since it decomposes earlier
+(260 vs.\ 365\,$^\circ$C). The main reason to keep it is outside the model: ATH is a
+flame retardant whose water release protects the silicone, which this model does not
+represent.
+
+\paragraph{Selection.} The final choice weighs worst cases, not baselines. The six
+Pareto-front formulations were rerun under every input the data leave open: the
+expansion ratio ($E = 3$, 10), a segregated network, the gas-cell conductivity
+(0.06\,W\,m$^{-1}$K$^{-1}$), a higher-temperature microsphere grade (Expancel 920,
+expanding at 122--206\,$^\circ$C~\cite{expancel920}), switch response
+($\tau = 0$, 30\,s), heat capacity ($\times0.7$) and, for nanowires, junction strength
+($g = 0$, 0.5, sintered), poor dispersion and halved wire conductivity. The
+criterion is the lowest worst-case normal-use peak among formulations whose worst-case
+containing thickness is at most 4\,mm, roughly that of the graphene switch:
+\begin{center}\small
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+  Formulation (vol\%) & Worst-case thinnest [mm] & Worst-case peak there [$^\circ$C] \\
+  \midrule
+  40 microspheres                     & 3.0   & 45.1 \\
+  \textbf{40 microspheres + 20 ATH}   & \textbf{3.5} & \textbf{43.0} \\
+  40 microspheres + 10 ATH + 1 AgNW   & 4.0   & 43.1 \\
+  40 microspheres + 2 AgNW            & 5.875 & 43.7 \\
+  40 microspheres + 10 ATH + 2 AgNW   & 6.5   & 43.0 \\
+  40 microspheres + 10 ATH + 3 AgNW   & 9.375 & 43.0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+The 1\,vol\% nanowire variant is almost tied with the selected formulation, but it adds
+silver, a dispersion step and the junction uncertainty for 0.1\,K. The pick is therefore:
+
+\begin{center}
+\fbox{\parbox{0.88\linewidth}{\centering\small
+\textbf{Recommended formulation:} silicone elastomer matrix (40\,vol\%) + Expancel 051 DU 40
+expandable microspheres (40\,vol\%) + 1\,$\mu$m Al(OH)$_3$ (20\,vol\%). No conductive
+filler; electrically insulating.\\[3pt]
+$\kon = 0.27$, $\koff = 0.093$\,W\,m$^{-1}$K$^{-1}$ ($E = 5$), $\rho = 1320$\,kg\,m$^{-3}$,
+$c_p = 1310$\,J\,kg$^{-1}$K$^{-1}$, switch at 127\,$^\circ$C (one-way); contains runaway at
+2.9\,mm with a 42.1\,$^\circ$C normal-use peak; 2.25--3.5\,mm and 41.2--43.0\,$^\circ$C
+across all sensitivity cases.}}
+\end{center}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.78\linewidth]{fig_form_robust.png}
+  \caption{The recommended formulation under each uncertain input: thinnest containing
+  barrier and the normal-operation peak at that thickness.}
+  \label{fig:formrobust}
+\end{figure}
+
+Figure~\ref{fig:formrobust} shows the robustness. The expansion ratio and the gas-cell
+conductivity matter most, and switch timing, microsphere grade and heat capacity least.
+Against the products of Section~\ref{sec:materials}, the formulation contains runaway in
+a thinner layer than everything except aerogel. It runs 37\,K cooler than aerogel and
+6\,K cooler than mica at less than half mica's thickness. It does not match the graphene
+switch, which contains at 3.5\,mm with a 38.9\,$^\circ$C peak. The graphene switch's
+cold-state conductivity is five times higher, and a microsphere composite can match that
+only with a conductive network that expansion reliably breaks. Whether nanowire or
+graphene networks in an expanding silicone actually break is the key experiment this
+study points to. If they do, the 2--3\,vol\% nanowire formulations reach
+39.6--40.5\,$^\circ$C at 3.6--4.3\,mm. If they do not, the filler-free formulation
+above is the safe choice.
+
 % =====================================================================
 \section{Discussion and limitations}
 
@@ -795,6 +1102,17 @@ The model is deliberately minimal, and several simplifications bound what it can
         and ceramic fibre data are for industrial blankets rather than battery sheets,
         and the switch is described by two published points. Decomposition, melting
         leakage and combustion of organic barriers are not modelled.
+  \item \textbf{Formulation model.} The fin and network models are mean-field estimates,
+        checked against two measured nanowire composites in epoxy, not silicone. The
+        junction coefficient, the constrained expansion ratio of microspheres in a cured
+        silicone and whether expansion breaks a wire network are not known and are
+        varied instead. The model under-predicts nanoparticle--nanowire synergy, ignores
+        the viscosity limits of high loadings beyond a 60\,vol\% cap, and treats
+        the expanded state as fixed: thermoplastic shells soften and collapse well
+        below the barrier's hot-face temperature, and the silicone itself degrades
+        above roughly 300\,$^\circ$C. The selected formulation is the one to make and
+        measure ($k(T)$ through expansion, expansion ratio under the stack's
+        compression), not a validated product.
   \item \textbf{Illustrative cell parameters.} The cell and kinetic values are not fitted
         to data, so temperatures and times are qualitative. The material ranking is more
         robust than the absolute thicknesses, which scale with the end cooling $h$.
@@ -828,6 +1146,21 @@ thermal switch is the best candidate: it contains runaway at about 3.5\,mm with 
 normal-use temperature within 1\,K of an ideal conductor, a result that holds across all
 sensitivity cases. Its standing depends on measured high-temperature properties that are
 not yet available.
+
+A formulation study then asked what a silicone barrier should be made of. With wires
+treated as fins and wire networks as a percolating junction network, the model
+reproduces measured silver-nanowire composites to within about 10\,\%. Per unit volume,
+nanowires are the most effective way to raise cold-state conductivity, but no static
+filler, particle, nanoparticle, nanowire or hybrid escapes the containment conflict.
+Expandable microspheres turn the composite into a one-way switch, and their fraction
+and expansion ratio dominate everything else. Nanowires help only if expansion breaks
+their network, and they make containment much worse if it does not. The recommended
+formulation, silicone with 40\,vol\% Expancel 051 microspheres and 20\,vol\% Al(OH)$_3$, contains
+runaway at 2.9\,mm with a 42\,$^\circ$C normal-use peak and stays within 3.5\,mm and
+43\,$^\circ$C across all sensitivity cases. That makes it the strongest option that can be
+formulated from commercial ingredients, second only to the laboratory graphene switch.
+The decisive next measurements are the constrained expansion ratio and whether a
+nanowire network survives expansion.
 
 \paragraph{Code and data availability.}
 The model, tests and scripts that regenerate every figure and number in this report are

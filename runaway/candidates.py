@@ -116,6 +116,34 @@ SOURCES: dict[str, Source] = {
         Source("sylgard184", "Dow SYLGARD 184 silicone elastomer data sheet: specific gravity 1.03; "
                "thermal conductivity 0.16-0.27 W/(m K) depending on the copy of the sheet.",
                "https://neyco.fr/uploads/media/product/0001/05/Sylgard-184-dow-corning-neyco.pdf"),
+        # --- formulation study (see formulation.py) ---
+        Source("zhang2019agnw", "L. Zhang, W. Zhu, Y. Huang, S. Qi, Synergetic effects of silver nanowires "
+               "and graphene oxide on thermal conductivity of epoxy composites, Nanomaterials 9(9), "
+               "1264 (2019). doi:10.3390/nano9091264. AgNW ~120 nm x ~15 um; AgNW-only epoxy "
+               "0.35 W/(m K) at 4 wt%; laser flash.", "https://pmc.ncbi.nlm.nih.gov/articles/PMC6781080/"),
+        Source("chen2014agnw", "C. Chen et al., High-performance "
+               "epoxy/silica coated silver nanowire composites as underfill material for electronic "
+               "packaging, Compos. Sci. Technol. 105, 80-85 (2014). doi:10.1016/j.compscitech.2014.10.002. "
+               "4 vol%: 1.03 W/(m K) coated, 0.57 uncoated, neat epoxy 0.19 (abstract).",
+               "https://research.polyu.edu.hk/en/publications/high-performance-epoxysilica-coated-silver-nanowire-composites-as/"),
+        Source("hu2021agnwal2o3", "Y. Hu, C. Chen et al., Novel micro-nano epoxy composites for electronic "
+               "packaging application: balance of thermal conductivity and processability, Compos. Sci. "
+               "Technol. (2021). doi:10.1016/j.compscitech.2021.108760. 40 vol% surface-treated alumina + "
+               "0.5 vol% AgNW: 1.602 W/(m K), 106.5% above the same composite without nanowires "
+               "(abstract, via search summary).",
+               "https://doi.org/10.1016/j.compscitech.2021.108760"),
+        Source("florian2001", "R. Florian, Z. Neda, Improved percolation thresholds for rods in three-"
+               "dimensional boxes, arXiv:cond-mat/0110067 (2001). Excluded-volume rule N_c V_ex = 1 "
+               "holds in the slender-rod limit; V_ex = 4 L^2 R <sin g>, <sin g> = pi/4 (isotropic).",
+               "https://arxiv.org/abs/cond-mat/0110067"),
+        Source("expancel051", "Nouryon, Expancel 051 DU 40 technical data sheet (2026-01): Tstart 105-110 C, "
+               "Tmax 142-151 C, TMA density <= 25 kg/m^3, D(0.5) 9-15 um.",
+               "https://www.nouryon.com/globalassets/inriver/resources/technicaldatasheet-expancel-051-du-40-global-en.pdf"),
+        Source("expancel920", "Expancel 920 DU 120 listing (Ataman Chemicals): Tstart 122-132 C, Tmax "
+               "194-206 C, D(0.5) 28-38 um.",
+               "https://www.atamanchemicals.com/expancel-920-du-120_u23784/"),
+        Source("kyocera_al2o3", "Kyocera F99.7 alumina data sheet: 34.9 W/(m K) at 20 C (>99.5% Al2O3).",
+               "https://shop.kyocera-solutions.de/storage/downloads/kyocera-f99-7-al2o3-englisch.pdf"),
     ]
 }
 
